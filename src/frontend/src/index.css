@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.75rem;
+        
+        /* Healthcare theme - Calming teal/green palette */
+        --background: 0.99 0 0;
+        --foreground: 0.20 0 0;
+        
+        --card: 1 0 0;
+        --card-foreground: 0.20 0 0;
+        
+        --popover: 1 0 0;
+        --popover-foreground: 0.20 0 0;
+        
+        /* Primary: Calming teal */
+        --primary: 0.55 0.12 180;
+        --primary-foreground: 0.99 0 0;
+        
+        /* Secondary: Soft sage green */
+        --secondary: 0.94 0.02 150;
+        --secondary-foreground: 0.25 0 0;
+        
+        /* Muted: Light neutral */
+        --muted: 0.96 0 0;
+        --muted-foreground: 0.50 0 0;
+        
+        /* Accent: Lighter teal */
+        --accent: 0.95 0.03 180;
+        --accent-foreground: 0.25 0 0;
+        
+        /* Destructive: Soft coral for errors */
+        --destructive: 0.60 0.18 25;
+        --destructive-foreground: 0.99 0 0;
+        
+        /* Borders and inputs */
+        --border: 0.90 0 0;
+        --input: 0.90 0 0;
+        --ring: 0.55 0.12 180;
+        
+        /* Chart colors - healthcare themed */
+        --chart-1: 0.55 0.12 180;
+        --chart-2: 0.65 0.15 150;
+        --chart-3: 0.70 0.10 200;
+        --chart-4: 0.60 0.08 160;
+        --chart-5: 0.75 0.12 140;
+    }
+
+    .dark {
+        --background: 0.15 0 0;
+        --foreground: 0.95 0 0;
+        
+        --card: 0.18 0 0;
+        --card-foreground: 0.95 0 0;
+        
+        --popover: 0.20 0 0;
+        --popover-foreground: 0.95 0 0;
+        
+        /* Primary: Brighter teal for dark mode */
+        --primary: 0.70 0.15 180;
+        --primary-foreground: 0.15 0 0;
+        
+        /* Secondary: Muted green */
+        --secondary: 0.25 0.03 150;
+        --secondary-foreground: 0.95 0 0;
+        
+        /* Muted: Dark neutral */
+        --muted: 0.25 0 0;
+        --muted-foreground: 0.65 0 0;
+        
+        /* Accent: Medium teal */
+        --accent: 0.30 0.05 180;
+        --accent-foreground: 0.95 0 0;
+        
+        /* Destructive: Brighter coral for dark mode */
+        --destructive: 0.65 0.20 25;
+        --destructive-foreground: 0.15 0 0;
+        
+        /* Borders and inputs */
+        --border: 0.30 0 0;
+        --input: 0.30 0 0;
+        --ring: 0.70 0.15 180;
+        
+        /* Chart colors - adjusted for dark mode */
+        --chart-1: 0.70 0.15 180;
+        --chart-2: 0.75 0.18 150;
+        --chart-3: 0.80 0.12 200;
+        --chart-4: 0.72 0.10 160;
+        --chart-5: 0.82 0.15 140;
+    }
+
+    * {
+        @apply border-border;
+    }
+    
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold tracking-tight;
+    }
+}

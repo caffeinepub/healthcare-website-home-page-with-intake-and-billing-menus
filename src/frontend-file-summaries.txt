@@ -1,0 +1,11 @@
+{
+  "frontend/src/App.tsx": "Main application component that sets up TanStack Router with three routes (Home, Intake, Billing) and a shared Layout component containing Header and Footer.",
+  "frontend/src/components/Header.tsx": "Sticky header component with logo, app name, and navigation links to Intake and Billing pages with active state highlighting.",
+  "frontend/src/components/Footer.tsx": "Footer component displaying copyright information and attribution link to caffeine.ai with UTM tracking parameters.",
+  "frontend/src/pages/Home.tsx": "Home page featuring a hero section with call-to-action buttons and a services section showcasing Intake and Billing features with interactive cards.",
+  "frontend/src/pages/Intake.tsx": "Intake page displaying patient registration information with feature cards for patient information, appointment scheduling, contact management, and communication.",
+  "frontend/src/pages/Billing.tsx": "Billing page showcasing billing management features including invoice management, payment processing, insurance claims, and financial reports.",
+  "frontend/src/index.css": "Global styles with a healthcare-themed OKLCH color system using calming teal and green tones, avoiding blue-purple combinations, with full light and dark mode support.",
+  "frontend/tailwind.config.js": "Tailwind configuration extended with Inter font family and custom design tokens matching the healthcare theme.",
+  "frontend/src/hooks/useQueries.ts": "Placeholder file for future React Query hooks to interact with backend operations."
+}

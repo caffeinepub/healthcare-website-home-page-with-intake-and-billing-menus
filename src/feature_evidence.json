@@ -1,0 +1,103 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-create-a-home-page-for-a-healthcare-web-application-that-prominently-displays-a-navigation-menu-with-exactly-two-items-intake-and-billing",
+      "featureTitle": "Create a Home page for a healthcare web application that prominently displays a navigation menu with exactly two items: \"Intake\" and \"Billing\".",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/main.tsx",
+        "frontend/src/pages/Home.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-intake-page-route-that-is-reachable-from-the-home-page-menu-and-displays-a-clear-page-header-intake-and-placeholder-content-indicating-the-section-is-for-patient-intake",
+      "featureTitle": "Implement an \"Intake\" page/route that is reachable from the Home page menu and displays a clear page header \"Intake\" and placeholder content indicating the section is for patient intake.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/Intake.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-billing-page-route-that-is-reachable-from-the-home-page-menu-and-displays-a-clear-page-header-billing-and-placeholder-content-indicating-the-section-is-for-billing",
+      "featureTitle": "Implement a \"Billing\" page/route that is reachable from the Home page menu and displays a clear page header \"Billing\" and placeholder content indicating the section is for billing.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/Billing.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-apply-a-cohesive-healthcare-appropriate-visual-theme-colors-typography-spacing-and-component-styling-consistently-across-home-intake-and-billing-pages-do-not-use-a-blue-purple-color-palette",
+      "featureTitle": "Apply a cohesive, healthcare-appropriate visual theme (colors, typography, spacing, and component styling) consistently across Home, Intake, and Billing pages. Do not use a blue & purple color palette.",
+      "files": [
+        "frontend/src/index.css",
+        "frontend/src/pages/Billing.tsx",
+        "frontend/src/pages/Home.tsx",
+        "frontend/src/pages/Intake.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-the-required-generated-static-images-under-frontend-public-assets-generated-and-render-them-in-the-ui-e-g-logo-in-the-top-navigation-and-a-hero-image-illustration-on-the-home-page-do-not-serve-these-images-from-the-backend",
+      "featureTitle": "Add the required generated static images under frontend/public/assets/generated and render them in the UI (e.g., logo in the top navigation and a hero image/illustration on the Home page). Do not serve these images from the backend.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/Home.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-14T20:51:57.482Z",
+  "summary": "Core routing and UI pages (Home/Intake/Billing) plus a shared Header navigation with exactly two menu items are implemented, along with a cohesive teal/green theme via Tailwind CSS variables. However, the required generated static image files themselves are not evidenced as added under frontend/public/assets/generated, and several unrequested authentication/actor/react-query utilities were introduced despite being listed as non-goals.",
+  "missing_requirements": [
+    {
+      "id": "REQ-5",
+      "requirement": "Add the required generated static images under frontend/public/assets/generated with the exact filenames, and render them in the UI without serving from backend.",
+      "reason": "The UI references the generated image paths, but the diff summary does not show the actual image files being added under frontend/public/assets/generated, so existence with exact filenames cannot be verified from the provided changes.",
+      "evidence": [
+        "frontend/src/components/Header.tsx",
+        "frontend/src/pages/Home.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Internet Identity authentication provider and related authentication hook implementation.",
+      "reason": "Authentication/authorization flows (e.g., Internet Identity) were explicitly listed as non-goals unless requested later, but an InternetIdentityProvider and substantial auth-client logic were added and wired into the app root.",
+      "evidence": [
+        "frontend/src/hooks/useInternetIdentity.ts",
+        "frontend/src/main.tsx"
+      ]
+    },
+    {
+      "description": "Backend actor access hook with React Query (useActor) and implied authenticated/anonymous actor creation behavior.",
+      "reason": "Backend changes were to be added only if strictly necessary for the requested UI; the BuildRequest did not request backend interaction, yet a useActor hook using identity and React Query was added.",
+      "evidence": [
+        "frontend/src/hooks/useActor.ts",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "Footer attribution/UTM link to caffeine.ai.",
+      "reason": "Not requested by the BuildRequest; adds external link and tracking parameters beyond the specified pages/routes/theme/images.",
+      "evidence": [
+        "frontend/src/components/Footer.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.74,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Footer.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/Billing.tsx",
+    "frontend/src/pages/Home.tsx",
+    "frontend/src/pages/Intake.tsx",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

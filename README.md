@@ -1,2 +1,3 @@
-# healthcare-website-home-page-with-intake-and-billing-menus
-Exported from Caffeine project: Healthcare website home page with Intake and Billing menus
+## Healthcare website home page with Intake and Billing menus
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

@@ -1,0 +1,108 @@
+{
+  "kind": "build_request",
+  "title": "Healthcare website home page with Intake and Billing menus",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Create a Home page for a healthcare web application that prominently displays a navigation menu with exactly two items: \"Intake\" and \"Billing\".",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Creat am website for health care application having intake and billing named menu on home page"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Home page loads successfully and shows a visible menu/navigation area.",
+        "Menu contains the items labeled exactly \"Intake\" and \"Billing\" (English text).",
+        "Clicking each menu item navigates to its respective page/route without a full page reload."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement an \"Intake\" page/route that is reachable from the Home page menu and displays a clear page header \"Intake\" and placeholder content indicating the section is for patient intake.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "having intake ... named menu on home page"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a navigable route/page titled \"Intake\".",
+        "The Intake page renders a header \"Intake\" and basic placeholder body text in English.",
+        "Users can navigate back to Home and then to Billing without errors."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement a \"Billing\" page/route that is reachable from the Home page menu and displays a clear page header \"Billing\" and placeholder content indicating the section is for billing.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "... and billing named menu on home page"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a navigable route/page titled \"Billing\".",
+        "The Billing page renders a header \"Billing\" and basic placeholder body text in English.",
+        "Users can navigate between Intake and Billing using the menu/navigation."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Apply a cohesive, healthcare-appropriate visual theme (colors, typography, spacing, and component styling) consistently across Home, Intake, and Billing pages. Do not use a blue & purple color palette.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All pages share consistent typography, spacing, and navigation styling.",
+        "The overall look feels like a healthcare application (clean, calm, professional).",
+        "Primary/secondary colors used are not a combination of blue and purple together as the main palette."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add the required generated static images under frontend/public/assets/generated and render them in the UI (e.g., logo in the top navigation and a hero image/illustration on the Home page). Do not serve these images from the backend.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Images listed in imageRequirements.required exist at frontend/public/assets/generated with the exact filenames.",
+        "Home page renders the hero image/illustration from the generated assets.",
+        "The navigation area renders the logo image from the generated assets.",
+        "No backend endpoints are used to fetch these static images."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor; only add backend changes if strictly necessary for the requested UI.",
+    "Do not edit files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT; compose them instead."
+  ],
+  "nonGoals": [
+    "Implementing real patient intake forms, data validation, or saving intake data to the backend.",
+    "Implementing billing calculations, invoices, payment processing, or Stripe integration.",
+    "Authentication/authorization flows (e.g., Internet Identity) unless explicitly requested later."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Minimal healthcare logo mark, clean line icon style, dark-on-light (healthcare-logo.dim_256x256.png)",
+      "Calm healthcare hero illustration with abstract shapes and clinic/patient-care motif, light background (healthcare-hero.dim_1600x900.png)"
+    ],
+    "edits": []
+  }
+}

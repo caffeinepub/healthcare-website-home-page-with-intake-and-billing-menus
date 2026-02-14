@@ -1,0 +1,20 @@
+{
+  "backend/main.mo": "Minimal Motoko canister actor with no methods.",
+  "feature_evidence.json": "Feature report mapping implemented UI pages and components to requirements and evidence.",
+  "frontend-file-summaries.txt": "Text file containing prewritten summaries of key frontend source files.",
+  "frontend/index.css": "Tailwind base stylesheet defining root design tokens and dark mode overrides using OKLCH values.",
+  "frontend/index.html": "HTML entry point with root div and script loading the React main.tsx module.",
+  "frontend/src/App.tsx": "Sets up TanStack Router with Home, Intake, and Billing routes and applies a shared layout.",
+  "frontend/src/components/Footer.tsx": "Footer showing copyright text and a caffeine.ai attribution link with tracking params.",
+  "frontend/src/components/Header.tsx": "Header with logo and navigation links for Intake and Billing, highlighting the active route.",
+  "frontend/src/hooks/useActor.ts": "React hook that manages creating and refreshing the backend actor based on Internet Identity state.",
+  "frontend/src/hooks/useInternetIdentity.ts": "Implements Internet Identity auth context, handling login, logout, stored identity, and status tracking.",
+  "frontend/src/hooks/useQueries.ts": "Placeholder module reserved for future React Query hooks.",
+  "frontend/src/index.css": "Global Tailwind CSS theme using teal and green healthcare‑styled OKLCH variables with dark mode tokens.",
+  "frontend/src/main.tsx": "React entry point initializing QueryClient, InternetIdentityProvider, and rendering App.",
+  "frontend/src/pages/Billing.tsx": "Billing page UI with header, feature cards for invoices, payments, claims, reports, and a security info panel.",
+  "frontend/src/pages/Home.tsx": "Home page with hero section, navigation links to Intake and Billing, service descriptions, and a hero image.",
+  "frontend/src/pages/Intake.tsx": "Intake page UI with header, cards for patient info, scheduling, contacts, communication, and a getting-started panel.",
+  "frontend/tailwind.config.js": "Tailwind configuration defining theme extensions, colors, animations, and plugins.",
+  "project_state.json": "Project metadata describing requirements, features, assets, and current build state for the healthcare website."
+}
