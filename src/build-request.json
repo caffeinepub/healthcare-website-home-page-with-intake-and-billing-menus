@@ -1,108 +1,76 @@
 {
   "kind": "build_request",
-  "title": "Healthcare website home page with Intake and Billing menus",
+  "title": "Fix Manifest LOC Billing Display to show sample record by resetting previously created invoices when needed",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Create a Home page for a healthcare web application that prominently displays a navigation menu with exactly two items: \"Intake\" and \"Billing\".",
-      "target": "frontend",
+      "id": "REQ-49",
+      "text": "Ensure that clicking the “Display” button on the Manifest LOC Billing page reliably results in the sample inquiry record being shown in the grid with these exact values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”, even if the record was previously invoiced.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "Creat am website for health care application having intake and billing named menu on home page"
+          "On click on display button on manifest loc billing page this record should display ... This record is not coming on clicking on display from manifest loc inquiry page, if it is due to already created please delete the created invoices"
         ]
       },
       "acceptanceCriteria": [
-        "Home page loads successfully and shows a visible menu/navigation area.",
-        "Menu contains the items labeled exactly \"Intake\" and \"Billing\" (English text).",
-        "Clicking each menu item navigates to its respective page/route without a full page reload."
+        "On the Manifest LOC Billing page, clicking “Display” shows a row with Client=PhilipTest, MR#=KT99, Statement period=1/1/2026–1/31/2026, Payer/Payorsource=NGS, Amount=3100.",
+        "If the sample inquiry exists in backend state but is currently marked as invoiced (and thus would be filtered out), the system automatically makes it available again so it appears after clicking “Display”.",
+        "The “Display” action continues to exclude other inquiries that are marked as invoiced; only the sample record is force-restored to satisfy the required display behavior."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Implement an \"Intake\" page/route that is reachable from the Home page menu and displays a clear page header \"Intake\" and placeholder content indicating the section is for patient intake.",
-      "target": "frontend",
+      "id": "REQ-50",
+      "text": "Add backend support to delete previously created invoice(s) that correspond to the Manifest LOC Billing sample record and restore the sample inquiry’s availability so it can be displayed again.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "having intake ... named menu on home page"
+          "if it is due to already created please delete the created invoices"
         ]
       },
       "acceptanceCriteria": [
-        "There is a navigable route/page titled \"Intake\".",
-        "The Intake page renders a header \"Intake\" and basic placeholder body text in English.",
-        "Users can navigate back to Home and then to Billing without errors."
+        "A new backend method exists that, for the current caller (or admin), deletes invoice(s) associated with the LOC sample record (PhilipTest / KT99) and sets the matching inquiry’s isInvoiced flag back to false.",
+        "After calling this backend method, subsequent calls to getInquiries() include the sample inquiry with isInvoiced=false (visible to the caller), without requiring manual state edits.",
+        "The method enforces the same authorization rules as existing invoice/inquiry mutations (users can only affect their own data unless admin)."
       ]
     },
     {
-      "id": "REQ-3",
-      "text": "Implement a \"Billing\" page/route that is reachable from the Home page menu and displays a clear page header \"Billing\" and placeholder content indicating the section is for billing.",
+      "id": "REQ-51",
+      "text": "Update the Manifest LOC Billing page’s “Display” click flow to use the new backend reset capability when the sample inquiry is missing due to being previously invoiced, then re-fetch and render the restored inquiry in the grid.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "... and billing named menu on home page"
+          "This record is not coming on clicking on display from manifest loc inquiry page, if it is due to already created please delete the created invoices"
         ]
       },
       "acceptanceCriteria": [
-        "There is a navigable route/page titled \"Billing\".",
-        "The Billing page renders a header \"Billing\" and basic placeholder body text in English.",
-        "Users can navigate between Intake and Billing using the menu/navigation."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Apply a cohesive, healthcare-appropriate visual theme (colors, typography, spacing, and component styling) consistently across Home, Intake, and Billing pages. Do not use a blue & purple color palette.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All pages share consistent typography, spacing, and navigation styling.",
-        "The overall look feels like a healthcare application (clean, calm, professional).",
-        "Primary/secondary colors used are not a combination of blue and purple together as the main palette."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Add the required generated static images under frontend/public/assets/generated and render them in the UI (e.g., logo in the top navigation and a hero image/illustration on the Home page). Do not serve these images from the backend.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Images listed in imageRequirements.required exist at frontend/public/assets/generated with the exact filenames.",
-        "Home page renders the hero image/illustration from the generated assets.",
-        "The navigation area renders the logo image from the generated assets.",
-        "No backend endpoints are used to fetch these static images."
+        "When “Display” is clicked and the sample inquiry is not found among non-invoiced inquiries, the page triggers the backend reset for the sample record, then refetches inquiries and renders the sample row.",
+        "No new user-facing text is required beyond existing UI labels; if an error occurs, it may be logged to console as currently done, but the normal success path must show the sample row.",
+        "The grid still shows the exact empty-state message “No record, Click on display button” only when there are no available (non-invoiced) inquiries after the display flow completes."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor; only add backend changes if strictly necessary for the requested UI.",
-    "Do not edit files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT; compose them instead."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not modify files under frontend/src/components/ui (read-only).",
+    "Do not modify frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing real patient intake forms, data validation, or saving intake data to the backend.",
-    "Implementing billing calculations, invoices, payment processing, or Stripe integration.",
-    "Authentication/authorization flows (e.g., Internet Identity) unless explicitly requested later."
+    "Do not change the existing navigation/menu structure.",
+    "Do not introduce external databases or third-party services.",
+    "Do not implement new invoice formats (e.g., UB04 changes) beyond what is necessary to restore the sample inquiry record’s display behavior."
   ],
   "imageRequirements": {
-    "required": [
-      "Minimal healthcare logo mark, clean line icon style, dark-on-light (healthcare-logo.dim_256x256.png)",
-      "Calm healthcare hero illustration with abstract shapes and clinic/patient-care motif, light background (healthcare-hero.dim_1600x900.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

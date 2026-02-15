@@ -1,13 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Build a simple healthcare web app frontend with a Home page navigation menu linking to Intake and Billing pages, using a cohesive healthcare-appropriate theme (not a blue & purple main palette) and including a static logo and hero image.
+**Goal:** Make the Manifest LOC Billing “Display” action always show the required sample inquiry row (PhilipTest / KT99) by automatically resetting/deleting its previously created invoices when it has already been invoiced.
 
 **Planned changes:**
-- Create a Home page with a visible navigation menu containing exactly two items: “Intake” and “Billing”, using client-side navigation.
-- Add an “Intake” route/page with header “Intake” and placeholder text indicating patient intake.
-- Add a “Billing” route/page with header “Billing” and placeholder text indicating billing.
-- Apply consistent, clean healthcare styling across Home/Intake/Billing (colors, typography, spacing), avoiding a blue & purple primary palette.
-- Add and render generated static images from `frontend/public/assets/generated` (logo in top navigation; hero image on Home).
+- Backend: add a method to delete invoice(s) tied to the LOC sample record (PhilipTest / KT99) and set the matching inquiry’s `isInvoiced` back to `false`, enforcing existing authorization rules.
+- Frontend: update the Manifest LOC Billing page “Display” click flow to, when the sample inquiry is missing among non-invoiced inquiries, call the backend reset method, then re-fetch inquiries and render the restored sample row.
+- Ensure the “Display” flow continues to exclude other invoiced inquiries; only the sample record is force-restored.
 
-**User-visible outcome:** Users can open the Home page, see a healthcare-themed layout with a logo and hero image, and navigate between Intake and Billing pages without full page reloads.
+**User-visible outcome:** Clicking “Display” on the Manifest LOC Billing page reliably shows the sample row with Client=PhilipTest, MR#=KT99, Statement period=1/1/2026–1/31/2026, Payer=NGS, Amount=3100, even if it had been invoiced previously.

@@ -12,7 +12,7 @@ export default function Home() {
               <div className="space-y-4">
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
                   Welcome to{' '}
-                  <span className="text-primary">HealthCare</span>
+                  <span className="text-primary">Pinku</span>
                 </h1>
                 <p className="text-lg text-muted-foreground md:text-xl">
                   Streamlined patient intake and billing management for modern healthcare providers.
@@ -38,7 +38,7 @@ export default function Home() {
             <div className="flex items-center justify-center">
               <img
                 src="/assets/generated/healthcare-hero.dim_1600x900.png"
-                alt="Healthcare illustration"
+                alt="Pinku healthcare platform illustration"
                 className="w-full max-w-2xl rounded-2xl shadow-2xl"
               />
             </div>

@@ -1,11 +1,24 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "Build a healthcare web application website with a home page that includes menu items for Intake and Billing.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Minimal healthcare logo mark, clean line icon style, dark-on-light (healthcare-logo.dim_256x256.png)\n- Calm healthcare hero illustration with abstract shapes and clinic/patient-care motif, light background (healthcare-hero.dim_1600x900.png)",
+  "projectStateVersion": 37,
+  "summary": "Extend navigation and billing workflows so that once an invoice is created from a Manifest inquiry page, the invoiced record is removed from the inquiry grid; add selection and deletion capabilities on LOC/R&B Receivables pages; and when a created invoice is deleted from receivables, the corresponding record reappears in the inquiry grid upon Display to allow re-creation.",
+  "architectural_notes": [
+    "Rename the Account submenu/page label from \"R&B invoice receivable\" to \"R&B Receivables\" (update navigation text and matching page header accordingly).",
+    "Rename the Account submenu/page label from \"LOC invoice receivable\" to \"LOC Receivables\" (update navigation text and matching page header accordingly).",
+    "Invoice number hyperlinks on receivables pages should open a popup page titled \"Claim details\" (not UB04). The popup must show Total Amount (invoice amount), RHC Days, Continuous care Days, GIP Days, and Respite Days.",
+    "Once an invoice is created from a Manifest inquiry page, the source record should no longer appear in that inquiry grid (until/unless the invoice is deleted).",
+    "Add a selectable checkbox column on LOC Receivables and R&B Receivables grids for selecting receivable rows.",
+    "Add a Delete action/button on LOC Receivables and R&B Receivables pages to remove selected created invoices.",
+    "Deleting an invoice from receivables should make the associated inquiry record available again on the inquiry page when Display is clicked, enabling re-creation.",
+    "Add a \"Display\" button on LOC Receivables and R&B Receivables pages to fetch and display the created invoice receivables (from backend), similar to inquiry pages' Display behavior."
+  ],
+  "known_issues": [
+    "Invoice-number click currently opens an improper UB04 popup; should instead open the new \"Claim details\" popup with totals and day-type counts.",
+    "Navigation menus/routes are not working after the latest changes (e.g., Inquiry and Receivables pages are not accessible via menus).",
+    "Display button is not functioning on the Manifest LOC Billing (LOC manifest inquiry) page.",
+    "Manifest LOC Billing (LOC manifest inquiry) Display click is not showing the expected sample record (PhilipTest / KT99 / 1/1/2026–1/31/2026 / NGS / 3100); may be filtered out as already invoiced and requires confirming/deleting existing created invoices."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-home-page-for-a-healthcare-web-application-that-prominently-displays-a-navigation-menu-with-exactly-two-items-intake-and-billing",
@@ -46,6 +59,350 @@
         "REQ-5"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-rebrand-the-application-ui-by-replacing-the-brand-name-text-healthcare-healthcare-with-pinku-anywhere-it-appears-as-user-facing-branding-e-g-header-brand-label-home-hero-headline-footer-copyright-while-keeping-other-functional-labels-intake-billing-unchanged",
+      "title": "Rebrand the application UI by replacing the brand name text \"HealthCare\"/\"Healthcare\" with \"Pinku\" anywhere it appears as user-facing branding (e.g., header brand label, Home hero headline, footer copyright), while keeping other functional labels (\"Intake\", \"Billing\") unchanged.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-relevant-accessibility-user-visible-metadata-that-currently-references-healthcare-as-branding-e-g-logo-alt-text-and-any-similar-brand-name-alt-strings-to-use-pinku-while-keeping-existing-image-filenames-paths-unchanged",
+      "title": "Update relevant accessibility/user-visible metadata that currently references \"Healthcare\" as branding (e.g., logo alt text and any similar brand-name alt strings) to use \"Pinku\" while keeping existing image filenames/paths unchanged.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-any-non-ui-fallback-identifiers-that-embed-the-old-brand-name-and-are-used-in-user-visible-links-analytics-parameters-e-g-the-footer-s-default-app-identifier-string-to-align-with-the-new-brand-name-pinku",
+      "title": "Update any non-UI fallback identifiers that embed the old brand name and are used in user-visible links/analytics parameters (e.g., the Footer's default app identifier string) to align with the new brand name \"Pinku\".",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-selected-header-logo-img-element-at-xpath-html-1-body-1-div-1-div-1-header-1-div-1-a-1-img-1-to-use-the-new-pd-group-logo-image-asset-and-update-its-accessible-alt-text-to-pd-group-logo",
+      "title": "Update ONLY the selected Header logo <img> element at XPath /html[1]/body[1]/div[1]/div[1]/header[1]/div[1]/a[1]/img[1] to use the new PD group logo image asset and update its accessible alt text to \"PD group Logo\".",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-selected-h3-element-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-div-1-div-2-div-1-div-1-h3-1-to-display-the-text-pd-group",
+      "title": "Update ONLY the selected <h3> element at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[2]/div[1]/div[1]/h3[1] to display the text \"PD group\".",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-top-navigation-so-that-the-existing-top-level-billing-menu-item-contains-a-submenu-item-named-hospice-billing-keep-intake-and-billing-as-the-only-top-level-navigation-items",
+      "title": "Update the top navigation so that the existing top-level \"Billing\" menu item contains a submenu item named \"Hospice Billing\" (keep \"Intake\" and \"Billing\" as the only top-level navigation items).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-under-the-new-hospice-billing-submenu-item-add-two-nested-submenu-items-labeled-manifest-loc-billing-and-manifest-r-b-billing",
+      "title": "Under the new \"Hospice Billing\" submenu item, add two nested submenu items labeled \"Manifest LOC Billing\" and \"Manifest R&B Billing\".",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-routes-and-placeholder-pages-for-the-new-submenu-destinations-and-wire-the-nested-menu-items-to-navigate-to-them-1-hospice-billing-2-manifest-loc-billing-3-manifest-r-b-billing-each-page-must-display-a-clear-page-header-matching-its-menu-label",
+      "title": "Create routes and placeholder pages for the new submenu destinations and wire the nested menu items to navigate to them: (1) \"Hospice Billing\" (2) \"Manifest LOC Billing\" (3) \"Manifest R&B Billing\". Each page must display a clear page header matching its menu label.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-billing-overview-submenu-item-from-the-billing-dropdown-menu-in-the-top-navigation-while-keeping-the-rest-of-the-billing-menu-structure-including-hospice-billing-and-its-nested-items-unchanged",
+      "title": "Remove the \"Billing Overview\" submenu item from the Billing dropdown menu in the top navigation, while keeping the rest of the Billing menu structure (including \"Hospice Billing\" and its nested items) unchanged.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-manifest-loc-billing-page-add-an-output-grid-table-with-columns-client-mr-statement-period-payersource-and-amount-along-with-a-display-button-the-initial-no-data-state-must-show-no-records-and-display-the-message-exactly-no-record-click-on-display-button",
+      "title": "On the “Manifest LOC Billing” page, add an output grid table with columns: “Client”, “MR#”, “Statement period”, “Payersource”, and “Amount”, along with a “Display” button. The initial (no data) state must show no records and display the message exactly: “No record, Click on display button”.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-manifest-r-b-billing-page-add-an-output-grid-table-with-columns-client-mr-statement-period-payersource-and-amount-along-with-a-display-button-the-initial-no-data-state-must-show-no-records-and-display-the-message-exactly-no-record-click-on-display-button",
+      "title": "On the “Manifest R&B Billing” page, add an output grid table with columns: “Client”, “MR#”, “Statement period”, “Payersource”, and “Amount”, along with a “Display” button. The initial (no data) state must show no records and display the message exactly: “No record, Click on display button”.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-update-the-existing-display-button-behavior-so-that-clicking-it-populates-the-output-grid-with-exactly-one-record-with-these-values-client-philiptest-mr-kt99-statement-period-1-1-2026-1-31-2026-payer-ngs-amount-3100",
+      "title": "On the “Manifest LOC Billing” page (frontend/src/pages/ManifestLocBilling.tsx), update the existing “Display” button behavior so that clicking it populates the output grid with exactly one record with these values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-add-a-single-checkbox-per-row-to-allow-selecting-the-displayed-record-for-invoice-creation",
+      "title": "On the “Manifest LOC Billing” page (frontend/src/pages/ManifestLocBilling.tsx), add a single checkbox per row to allow selecting the displayed record for invoice creation.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-user-visible-create-invoice-button-on-both-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-and-the-manifest-r-b-billing-page-frontend-src-pages-manifestrbbilling-tsx",
+      "title": "Add a user-visible “Create Invoice” button on both the “Manifest LOC Billing” page (frontend/src/pages/ManifestLocBilling.tsx) and the “Manifest R&B Billing” page (frontend/src/pages/ManifestRbBilling.tsx).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-create-invoice-on-the-manifest-loc-billing-page-to-the-row-selection-checkbox-so-that-an-invoice-can-only-be-created-for-the-selected-record-with-a-simple-in-app-confirmation-when-the-action-succeeds",
+      "title": "Wire “Create Invoice” on the “Manifest LOC Billing” page to the row-selection checkbox so that an invoice can only be created for the selected record, with a simple in-app confirmation when the action succeeds.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-manifest-r-b-billing-page-frontend-src-pages-manifestrbbilling-tsx-add-the-same-row-selection-checkbox-column-to-the-billing-grid-so-records-can-be-selected-for-invoice-creation-even-if-the-grid-remains-empty-until-future-data-loading-changes",
+      "title": "On the “Manifest R&B Billing” page (frontend/src/pages/ManifestRbBilling.tsx), add the same row-selection checkbox column to the billing grid so records can be selected for invoice creation (even if the grid remains empty until future data loading changes).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-hospice-billing-overview-submenu-item-from-the-nested-hospice-billing-dropdown-under-the-top-level-billing-header-menu-while-keeping-the-remaining-billing-menu-structure-hospice-billing-manifest-loc-billing-and-manifest-r-b-billing-unchanged",
+      "title": "Remove the \"Hospice Billing Overview\" submenu item from the nested \"Hospice Billing\" dropdown under the top-level \"Billing\" header menu, while keeping the remaining Billing menu structure (\"Hospice Billing\" > \"Manifest LOC Billing\" and \"Manifest R&B Billing\") unchanged.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-top-level-header-navigation-menu-named-account-under-account-add-submenu-items-named-loc-invoice-receivable-and-r-b-invoice-receivable-and-wire-them-to-navigate-to-new-routes-pages",
+      "title": "Add a new top-level header navigation menu named \"Account\". Under \"Account\", add submenu items named \"LOC invoice receivable\" and \"R&B invoice receivable\", and wire them to navigate to new routes/pages.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-routes-and-placeholder-pages-for-loc-invoice-receivable-and-r-b-invoice-receivable-and-ensure-each-page-displays-a-clear-page-header-matching-its-menu-label",
+      "title": "Create routes and placeholder pages for \"LOC invoice receivable\" and \"R&B invoice receivable\" and ensure each page displays a clear page header matching its menu label.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-both-the-loc-invoice-receivable-and-r-b-invoice-receivable-pages-add-an-inquiry-style-output-grid-table-using-the-same-columns-as-the-existing-inquiry-style-grid-in-the-app-client-mr-statement-period-payersource-amount-and-add-a-new-first-column-named-invoice-number",
+      "title": "On both the \"LOC invoice receivable\" and \"R&B invoice receivable\" pages, add an inquiry-style output grid table using the same columns as the existing inquiry-style grid in the app (Client, MR#, Statement period, Payersource, Amount) and add a new first column named \"Invoice number\".",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-selected-page-header-h1-element-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-div-1-h1-1-on-the-r-b-invoice-receivable-page-to-display-the-exact-text-r-b-receivables",
+      "title": "Update ONLY the selected page header <h1> element at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/div[1]/h1[1] on the R&B invoice receivable page to display the exact text “R&B Receivables”.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-selected-page-header-h1-element-at-xpath-html-1-body-1-div-1-div-1-main-1-div-1-div-1-h1-1-on-the-loc-invoice-receivable-page-frontend-src-pages-locinvoicereceivable-tsx-to-display-the-exact-text-loc-receivables",
+      "title": "Update ONLY the selected page header <h1> element at XPath /html[1]/body[1]/div[1]/div[1]/main[1]/div[1]/div[1]/h1[1] on the LOC invoice receivable page (frontend/src/pages/LocInvoiceReceivable.tsx) to display the exact text “LOC Receivables”.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-top-navigation-account-submenu-label-for-the-loc-receivables-destination-to-display-loc-receivables-while-keeping-the-route-path-unchanged-loc-invoice-receivable",
+      "title": "Update the top navigation Account submenu label for the LOC receivables destination to display “LOC Receivables” while keeping the route path unchanged (/loc-invoice-receivable).",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-create-invoice-on-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-to-call-the-backend-invoice-creation-method-for-the-selected-row-receive-the-generated-invoice-number-and-ensure-the-created-invoice-appears-on-the-loc-receivables-page-list",
+      "title": "Wire “Create Invoice” on the Manifest LOC Billing page (frontend/src/pages/ManifestLocBilling.tsx) to call the backend invoice creation method for the selected row, receive the generated invoice number, and ensure the created invoice appears on the LOC receivables page list.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-loc-receivables-page-frontend-src-pages-locinvoicereceivable-tsx-to-load-and-display-loc-invoice-receivable-records-from-the-backend-in-the-existing-inquiry-style-table-using-the-existing-columns-invoice-number-client-mr-statement-period-payersource-amount",
+      "title": "Update the LOC receivables page (frontend/src/pages/LocInvoiceReceivable.tsx) to load and display LOC invoice receivable records from the backend in the existing inquiry-style table, using the existing columns (Invoice number, Client, MR#, Statement period, Payersource, Amount).",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-generated-invoice-number-value-on-the-loc-receivables-page-a-hyperlink-when-clicked-open-a-ub04-form-view-for-that-invoice",
+      "title": "Make the generated Invoice number value on the LOC receivables page a hyperlink; when clicked, open a UB04 form view for that invoice.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-ub04-invoice-view-page-frontend-src-pages-ub04form-tsx-to-render-a-standard-ub04-red-form-layout-instead-of-the-current-simplified-card-sections-so-that-the-invoice-details-opened-from-the-loc-receivables-invoice-number-link-look-like-a-traditional-ub04-red-form",
+      "title": "Update the UB04 invoice view page (frontend/src/pages/Ub04Form.tsx) to render a standard UB04 red form layout instead of the current simplified card sections, so that the invoice details opened from the LOC Receivables invoice-number link look like a traditional UB04 red form.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-and-use-a-static-ub04-red-form-visual-asset-for-the-ub04-view-stored-under-frontend-public-assets-generated-and-render-it-within-the-ub04-page-as-the-form-background-template-do-not-serve-images-from-the-backend",
+      "title": "Add and use a static UB04 red form visual asset for the UB04 view, stored under frontend/public/assets/generated, and render it within the UB04 page as the form background/template (do not serve images from the backend).",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-loc-receivables-invoice-number-click-behavior-so-it-no-longer-navigates-to-the-ub04-form-route-ub04-form-invoicenumber-instead-clicking-an-invoice-number-must-open-a-popup-titled-exactly-claim-details",
+      "title": "Update the LOC Receivables invoice-number click behavior so it no longer navigates to the UB04 form route (/ub04-form/$invoiceNumber). Instead, clicking an invoice number must open a popup titled exactly \"Claim details\".",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-claim-details-popup-display-the-following-fields-as-user-visible-labels-total-amount-rhc-days-continuous-care-days-gip-days-and-respite-days-the-total-amount-value-must-show-the-selected-invoice-amount-from-the-receivables-row-that-was-clicked",
+      "title": "In the \"Claim details\" popup, display the following fields as user-visible labels: \"Total Amount\", \"RHC Days\", \"Continuous care Days\", \"GIP Days\", and \"Respite Days\". The \"Total Amount\" value must show the selected invoice amount from the receivables row that was clicked.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-inquiry-pages-so-that-once-an-invoice-is-successfully-created-from-an-inquiry-record-that-same-record-is-not-listed-again-on-the-inquiry-page-when-the-user-clicks-the-display-button",
+      "title": "Update the Manifest inquiry pages so that once an invoice is successfully created from an inquiry record, that same record is not listed again on the inquiry page when the user clicks the “Display” button.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-selectable-checkbox-column-to-both-receivables-pages-loc-receivables-and-r-b-receivables-so-a-listed-receivable-record-can-be-selected-for-actions",
+      "title": "Add a selectable checkbox column to both receivables pages (LOC Receivables and R&B Receivables) so a listed receivable record can be selected for actions.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-user-visible-delete-button-to-both-receivables-pages-that-deletes-the-selected-invoice-and-refreshes-the-receivables-list",
+      "title": "Add a user-visible “Delete” button to both receivables pages that deletes the selected invoice and refreshes the receivables list.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-that-deleting-a-created-invoice-from-a-receivables-page-causes-the-corresponding-inquiry-record-to-be-available-again-on-the-related-manifest-inquiry-page-when-the-user-clicks-display-enabling-the-invoice-to-be-created-again",
+      "title": "Ensure that deleting a created invoice from a receivables page causes the corresponding inquiry record to be available again on the related Manifest inquiry page when the user clicks “Display”, enabling the invoice to be created again.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-broken-header-menu-navigation-by-making-the-paths-used-in-the-header-navigation-match-the-actual-tanstack-router-route-paths-so-that-the-inquiry-manifest-and-receivables-destinations-are-reachable-via-the-menu-and-via-direct-url",
+      "title": "Fix the broken header menu navigation by making the paths used in the Header navigation match the actual TanStack Router route paths, so that the Inquiry (Manifest) and Receivables destinations are reachable via the menu and via direct URL.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-billing-inquiry-and-account-receivables-menu-active-state-detection-in-the-header-correctly-reflects-the-fixed-route-paths-so-the-appropriate-top-level-menu-highlighting-works-when-the-user-is-on-inquiry-manifest-pages-or-receivables-pages",
+      "title": "Ensure the Billing/Inquiry and Account/Receivables menu active-state detection in the Header correctly reflects the fixed route paths so the appropriate top-level menu highlighting works when the user is on Inquiry/Manifest pages or Receivables pages.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-display-button-behavior-on-the-manifest-loc-billing-loc-manifest-inquiry-page-so-that-clicking-display-reliably-populates-the-grid-from-the-latest-inquiries-fetched-from-the-backend-excluding-inquiries-already-marked-as-invoiced-instead-of-leaving-the-grid-unchanged-due-to-stale-query-data",
+      "title": "Fix the “Display” button behavior on the Manifest LOC Billing (LOC manifest inquiry) page so that clicking “Display” reliably populates the grid from the latest inquiries fetched from the backend (excluding inquiries already marked as invoiced), instead of leaving the grid unchanged due to stale query data.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-manifest-loc-billing-page-state-synchronization-logic-does-not-unintentionally-overwrite-or-prevent-display-results-from-appearing-e-g-avoid-update-loops-or-state-resets-caused-by-effects-reacting-to-displayed-grid-state-changes",
+      "title": "Ensure the Manifest LOC Billing page state synchronization logic does not unintentionally overwrite or prevent “Display” results from appearing (e.g., avoid update loops or state resets caused by effects reacting to displayed grid state changes).",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-user-visible-display-button-on-the-loc-receivables-page-frontend-src-pages-locinvoicereceivable-tsx-that-loads-and-displays-the-created-invoices-for-loc-only-i-e-invoices-created-from-the-corresponding-loc-inquiry-manifest-flow",
+      "title": "Add a user-visible \"Display\" button on the LOC Receivables page (frontend/src/pages/LocInvoiceReceivable.tsx) that loads and displays the created invoices for LOC only (i.e., invoices created from the corresponding LOC inquiry/manifest flow).",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-user-visible-display-button-on-the-r-b-receivables-page-frontend-src-pages-rbinvoicereceivable-tsx-that-loads-and-displays-the-created-invoices-for-r-b-only-i-e-invoices-created-from-the-corresponding-r-b-inquiry-manifest-flow",
+      "title": "Add a user-visible \"Display\" button on the R&B Receivables page (frontend/src/pages/RbInvoiceReceivable.tsx) that loads and displays the created invoices for R&B only (i.e., invoices created from the corresponding R&B inquiry/manifest flow).",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-existing-receivables-behaviors-row-selection-checkbox-delete-action-post-delete-refresh-continue-to-work-correctly-with-the-new-display-driven-loading-on-both-receivables-pages",
+      "title": "Ensure existing Receivables behaviors (row selection checkbox + Delete action + post-delete refresh) continue to work correctly with the new \"Display\"-driven loading on both receivables pages.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-that-clicking-the-display-button-on-the-manifest-loc-billing-page-reliably-results-in-the-sample-inquiry-record-being-shown-in-the-grid-with-these-exact-values-client-philiptest-mr-kt99-statement-period-1-1-2026-1-31-2026-payer-ngs-amount-3100-even-if-the-record-was-previously-invoiced",
+      "title": "Ensure that clicking the “Display” button on the Manifest LOC Billing page reliably results in the sample inquiry record being shown in the grid with these exact values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”, even if the record was previously invoiced.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-loc-billing-page-s-display-click-flow-to-use-the-new-backend-reset-capability-when-the-sample-inquiry-is-missing-due-to-being-previously-invoiced-then-re-fetch-and-render-the-restored-inquiry-in-the-grid",
+      "title": "Update the Manifest LOC Billing page’s “Display” click flow to use the new backend reset capability when the sample inquiry is missing due to being previously invoiced, then re-fetch and render the restored inquiry in the grid.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -54,9 +411,141 @@
       "summary": "Create a healthcare application website with a home page menu including Intake and Billing sections",
       "reqIds": [],
       "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Rebrand/rename the healthcare website branding/text from \"Healthcare\" to \"Pinku\" across the UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add nested Billing submenus: Hospice Billing > Manifest LOC Billing and Manifest R&B Billing",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Change the application logo branding to \"PD group\"",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Remove the \"Billing Overview\" submenu item from the Billing menu",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add output grid tables to Manifest LOC Billing and Manifest R&B Billing pages with specified columns and an initial empty state message plus Display button",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Add a \"Create Invoice\" button on both the Manifest LOC Billing and Manifest R&B Billing pages",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Update the Manifest LOC Billing Display button to populate the grid with a specific sample record (PhilipTest / KT99 / 1/1/2026–1/31/2026 / NGS / 3100)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add a selectable checkbox in the billing grid to select the displayed record for invoice creation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add a new top-level header navigation menu named \"Account\" with submenu items \"LOC invoice receivable\" and \"R&B invoice receivable\" and routes/pages for each",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "On the \"LOC invoice receivable\" and \"R&B invoice receivable\" pages, add an inquiry-style output grid using the same columns as the inquiry page plus a first column named \"Invoice number\"",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "When an invoice is created from a Manifest inquiry page, automatically list that record on the corresponding receivables page and generate an Invoice number value in the receivables grid",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Rename the \"LOC invoice receivable\" menu/page label to \"LOC Receivables\" (update navigation text and matching page header)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Implement backend invoice persistence and retrieval: when an invoice is created from a Manifest billing page, store a receivable record that can be listed on the corresponding receivables page, including a generated invoice number.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Change invoice-number link behavior to open a \"Claim details\" popup page showing Total Amount (invoice amount), RHC Days, Continuous care Days, GIP Days, and Respite Days",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "After creating an invoice from a Manifest inquiry page, remove/hide that invoiced record from the inquiry page grid so it is not listed again",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Add a checkbox selection column to LOC Receivables and R&B Receivables grids to allow selecting listed receivable records",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Add a Delete button on LOC Receivables and R&B Receivables pages to delete created invoices (receivable records)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "When an invoice is deleted from a receivables page, ensure the corresponding record reappears on the related Manifest inquiry page when clicking Display so it can be invoiced again",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Implement backend support to list and delete created receivable invoices so the frontend can (a) hide inquiry records that have already been invoiced and (b) restore them after deletion.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Add a \"Display\" button on LOC Receivables and R&B Receivables pages to load/display created invoices from the corresponding inquiry/invoice source",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add backend support to delete previously created invoice(s) that correspond to the Manifest LOC Billing sample record and restore the sample inquiry’s availability so it can be displayed again.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Healthcare website home page with Intake and Billing menus",
+  "projectName": "Pinku website home page with Intake and Billing menus",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

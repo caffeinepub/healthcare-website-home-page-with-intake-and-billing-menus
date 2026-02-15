@@ -10,7 +10,57 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface _SERVICE {}
+export interface Inquiry {
+  'id' : bigint,
+  'isInvoiced' : boolean,
+  'owner' : Principal,
+  'details' : string,
+}
+export interface Invoice {
+  'id' : bigint,
+  'status' : string,
+  'projectName' : string,
+  'clientName' : string,
+  'owner' : [] | [Principal],
+  'dueDate' : string,
+  'amountDue' : number,
+}
+export interface LOCInquiry {
+  'client' : string,
+  'statementPeriod' : string,
+  'mrNumber' : string,
+  'payer' : string,
+  'amount' : number,
+}
+export interface UserProfile {
+  'name' : string,
+  'email' : string,
+  'company' : string,
+}
+export type UserRole = { 'admin' : null } |
+  { 'user' : null } |
+  { 'guest' : null };
+export interface _SERVICE {
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'createInquiry' : ActorMethod<[string], bigint>,
+  'createInvoice' : ActorMethod<[string, number, string, string], bigint>,
+  'deleteInvoice' : ActorMethod<[bigint], boolean>,
+  'deleteLOCInvoice' : ActorMethod<[], boolean>,
+  'displayLOCInquiry' : ActorMethod<[], [] | [LOCInquiry]>,
+  'getAllInvoices' : ActorMethod<[], Array<Invoice>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getInquiries' : ActorMethod<[], Array<Inquiry>>,
+  'getInvoice' : ActorMethod<[bigint], [] | [Invoice]>,
+  'getInvoicesByClient' : ActorMethod<[string], Array<Invoice>>,
+  'getInvoicesByStatus' : ActorMethod<[string], Array<Invoice>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markInquiryAsInvoiced' : ActorMethod<[bigint, boolean], boolean>,
+  'markInvoiceAsPaid' : ActorMethod<[bigint], boolean>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+}
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];
 export declare const idlFactory: IDL.InterfaceFactory;

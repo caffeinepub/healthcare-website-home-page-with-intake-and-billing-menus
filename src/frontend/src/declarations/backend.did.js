@@ -8,10 +8,134 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
+export const LOCInquiry = IDL.Record({
+  'client' : IDL.Text,
+  'statementPeriod' : IDL.Text,
+  'mrNumber' : IDL.Text,
+  'payer' : IDL.Text,
+  'amount' : IDL.Float64,
+});
+export const Invoice = IDL.Record({
+  'id' : IDL.Nat,
+  'status' : IDL.Text,
+  'projectName' : IDL.Text,
+  'clientName' : IDL.Text,
+  'owner' : IDL.Opt(IDL.Principal),
+  'dueDate' : IDL.Text,
+  'amountDue' : IDL.Float64,
+});
+export const UserProfile = IDL.Record({
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'company' : IDL.Text,
+});
+export const Inquiry = IDL.Record({
+  'id' : IDL.Nat,
+  'isInvoiced' : IDL.Bool,
+  'owner' : IDL.Principal,
+  'details' : IDL.Text,
+});
+
+export const idlService = IDL.Service({
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
+  'createInvoice' : IDL.Func(
+      [IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'deleteLOCInvoice' : IDL.Func([], [IDL.Bool], []),
+  'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
+  'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getInquiries' : IDL.Func([], [IDL.Vec(Inquiry)], ['query']),
+  'getInvoice' : IDL.Func([IDL.Nat], [IDL.Opt(Invoice)], ['query']),
+  'getInvoicesByClient' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+  'getInvoicesByStatus' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markInquiryAsInvoiced' : IDL.Func([IDL.Nat, IDL.Bool], [IDL.Bool], []),
+  'markInvoiceAsPaid' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
+  const LOCInquiry = IDL.Record({
+    'client' : IDL.Text,
+    'statementPeriod' : IDL.Text,
+    'mrNumber' : IDL.Text,
+    'payer' : IDL.Text,
+    'amount' : IDL.Float64,
+  });
+  const Invoice = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : IDL.Text,
+    'projectName' : IDL.Text,
+    'clientName' : IDL.Text,
+    'owner' : IDL.Opt(IDL.Principal),
+    'dueDate' : IDL.Text,
+    'amountDue' : IDL.Float64,
+  });
+  const UserProfile = IDL.Record({
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'company' : IDL.Text,
+  });
+  const Inquiry = IDL.Record({
+    'id' : IDL.Nat,
+    'isInvoiced' : IDL.Bool,
+    'owner' : IDL.Principal,
+    'details' : IDL.Text,
+  });
+  
+  return IDL.Service({
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
+    'createInvoice' : IDL.Func(
+        [IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'deleteLOCInvoice' : IDL.Func([], [IDL.Bool], []),
+    'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
+    'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getInquiries' : IDL.Func([], [IDL.Vec(Inquiry)], ['query']),
+    'getInvoice' : IDL.Func([IDL.Nat], [IDL.Opt(Invoice)], ['query']),
+    'getInvoicesByClient' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+    'getInvoicesByStatus' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markInquiryAsInvoiced' : IDL.Func([IDL.Nat, IDL.Bool], [IDL.Bool], []),
+    'markInvoiceAsPaid' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };
