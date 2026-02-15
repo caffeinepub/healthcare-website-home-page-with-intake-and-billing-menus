@@ -103,6 +103,7 @@ export interface Invoice {
     clientName: string;
     owner?: Principal;
     dueDate: string;
+    payerSource: string;
     amountDue: number;
 }
 export interface Inquiry {
@@ -125,9 +126,15 @@ export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createInquiry(details: string): Promise<bigint>;
-    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string): Promise<bigint>;
+    /**
+     * / --- Invoice Management
+     * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
+     */
+    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string, payerSource: string): Promise<bigint>;
+    /**
+     * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+     */
     deleteInvoice(invoiceId: bigint): Promise<boolean>;
-    deleteLOCInvoice(): Promise<boolean>;
     displayLOCInquiry(): Promise<LOCInquiry | null>;
     getAllInvoices(): Promise<Array<Invoice>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -136,6 +143,7 @@ export interface backendInterface {
     getInvoice(invoiceId: bigint): Promise<Invoice | null>;
     getInvoicesByClient(clientName: string): Promise<Array<Invoice>>;
     getInvoicesByStatus(status: string): Promise<Array<Invoice>>;
+    getLOCReceivables(): Promise<Array<Invoice>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     markInquiryAsInvoiced(inquiryId: bigint, isInvoiced: boolean): Promise<boolean>;
@@ -187,17 +195,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createInvoice(arg0: string, arg1: number, arg2: string, arg3: string): Promise<bigint> {
+    async createInvoice(arg0: string, arg1: number, arg2: string, arg3: string, arg4: string): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3);
+                const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3, arg4);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3);
+            const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3, arg4);
             return result;
         }
     }
@@ -212,20 +220,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteInvoice(arg0);
-            return result;
-        }
-    }
-    async deleteLOCInvoice(): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteLOCInvoice();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteLOCInvoice();
             return result;
         }
     }
@@ -341,6 +335,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getLOCReceivables(): Promise<Array<Invoice>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLOCReceivables();
+                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLOCReceivables();
+            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -437,6 +445,7 @@ function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint
     clientName: string;
     owner: [] | [Principal];
     dueDate: string;
+    payerSource: string;
     amountDue: number;
 }): {
     id: bigint;
@@ -445,6 +454,7 @@ function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint
     clientName: string;
     owner?: Principal;
     dueDate: string;
+    payerSource: string;
     amountDue: number;
 } {
     return {
@@ -454,6 +464,7 @@ function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint
         clientName: value.clientName,
         owner: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.owner)),
         dueDate: value.dueDate,
+        payerSource: value.payerSource,
         amountDue: value.amountDue
     };
 }

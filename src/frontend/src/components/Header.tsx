@@ -12,7 +12,6 @@ export default function Header() {
   const billingRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (path: string) => currentPath === path;
   const isBillingActive = currentPath.includes('/billing');
   const isAccountActive = currentPath.includes('/receivables');
 
@@ -84,17 +83,6 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <Link
-            to="/intake"
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-              isActive('/intake')
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground'
-            }`}
-          >
-            Intake
-          </Link>
-          
           <div className="relative" ref={billingRef}>
             <button
               onClick={handleBillingClick}

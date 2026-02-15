@@ -27,6 +27,7 @@ export const Invoice = IDL.Record({
   'clientName' : IDL.Text,
   'owner' : IDL.Opt(IDL.Principal),
   'dueDate' : IDL.Text,
+  'payerSource' : IDL.Text,
   'amountDue' : IDL.Float64,
 });
 export const UserProfile = IDL.Record({
@@ -46,12 +47,11 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
   'createInvoice' : IDL.Func(
-      [IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+      [IDL.Text, IDL.Float64, IDL.Text, IDL.Text, IDL.Text],
       [IDL.Nat],
       [],
     ),
   'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-  'deleteLOCInvoice' : IDL.Func([], [IDL.Bool], []),
   'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
   'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -60,6 +60,7 @@ export const idlService = IDL.Service({
   'getInvoice' : IDL.Func([IDL.Nat], [IDL.Opt(Invoice)], ['query']),
   'getInvoicesByClient' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
   'getInvoicesByStatus' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+  'getLOCReceivables' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -93,6 +94,7 @@ export const idlFactory = ({ IDL }) => {
     'clientName' : IDL.Text,
     'owner' : IDL.Opt(IDL.Principal),
     'dueDate' : IDL.Text,
+    'payerSource' : IDL.Text,
     'amountDue' : IDL.Float64,
   });
   const UserProfile = IDL.Record({
@@ -112,12 +114,11 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
     'createInvoice' : IDL.Func(
-        [IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+        [IDL.Text, IDL.Float64, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Nat],
         [],
       ),
     'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-    'deleteLOCInvoice' : IDL.Func([], [IDL.Bool], []),
     'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
     'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -126,6 +127,7 @@ export const idlFactory = ({ IDL }) => {
     'getInvoice' : IDL.Func([IDL.Nat], [IDL.Opt(Invoice)], ['query']),
     'getInvoicesByClient' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
     'getInvoicesByStatus' : IDL.Func([IDL.Text], [IDL.Vec(Invoice)], ['query']),
+    'getLOCReceivables' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],

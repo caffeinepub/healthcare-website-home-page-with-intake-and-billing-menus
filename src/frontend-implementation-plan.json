@@ -1,47 +1,62 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Manifest LOC Billing Display to always show sample record (frontend)",
+  "title": "Billing-only UI: remove Intake navigation, dashboard content, and route",
   "requirements": [
     {
-      "id": "REQ-49",
-      "summary": "Ensure Manifest LOC Billing “Display” reliably shows the required sample inquiry row, restoring it when it was previously invoiced while keeping other invoiced inquiries excluded.",
+      "id": "REQ-79",
+      "summary": "Remove the Intake top-level navigation item from the Header so navigation is Billing-focused.",
       "acceptanceCriteria": [
-        "On the Manifest LOC Billing page, clicking “Display” shows a row with Client=PhilipTest, MR#=KT99, Statement period=1/1/2026–1/31/2026, Payer/Payorsource=NGS, Amount=3100.",
-        "If the sample inquiry exists in backend state but is currently marked as invoiced (and thus would be filtered out), the system automatically makes it available again so it appears after clicking “Display”.",
-        "The “Display” action continues to exclude other inquiries that are marked as invoiced; only the sample record is force-restored to satisfy the required display behavior."
+        "The header no longer renders a top-level navigation link labeled \"Intake\".",
+        "The remaining header menus (e.g., Billing and Account) continue to function and open/close as before."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ManifestLocBilling.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Update the Display flow to (1) refetch inquiries, (2) detect the sample inquiry by its exact details even if currently invoiced, (3) if the sample exists but is invoiced, invoke the backend reset capability via a dedicated React Query mutation, then refetch and render only non-invoiced inquiries so the restored sample row appears while other invoiced inquiries remain excluded."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add a React Query mutation hook that calls the backend reset capability for the LOC sample record (using the existing actor method that resets/deletes the sample invoice) and invalidates/refetches inquiries (and invoices if needed) so the billing grid can re-render the restored sample inquiry."
+          "description": "Remove the \"/intake\" Link and any \"Intake\" label rendering from the header navigation while keeping Billing/Account dropdown behavior unchanged."
         }
       ]
     },
     {
-      "id": "REQ-51",
-      "summary": "When the sample inquiry is missing on “Display” due to being previously invoiced, call the backend reset capability, then refetch and render the restored inquiry; preserve existing empty-state and error handling behavior.",
+      "id": "REQ-80",
+      "summary": "Remove Intake promotional/CTA content from the Home dashboard and update copy to be Billing-only.",
       "acceptanceCriteria": [
-        "When “Display” is clicked and the sample inquiry is not found among non-invoiced inquiries, the page triggers the backend reset for the sample record, then refetches inquiries and renders the sample row.",
-        "No new user-facing text is required beyond existing UI labels; if an error occurs, it may be logged to console as currently done, but the normal success path must show the sample row.",
-        "The grid still shows the exact empty-state message “No record, Click on display button” only when there are no available (non-invoiced) inquiries after the display flow completes."
+        "Home page no longer contains a CTA button/link that navigates to \"/intake\" or is labeled \"Patient Intake\"/\"Intake\".",
+        "Home page no longer contains an \"Intake\" service card or any intake-related \"blog\"/feature highlight content.",
+        "Any remaining Home page descriptive text is updated so it does not mention patient intake (Billing-focused copy only)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ManifestLocBilling.tsx",
+          "path": "frontend/src/pages/Home.tsx",
           "operation": "modify",
-          "description": "Implement conditional reset+refetch logic: after initial refetch, if the sample row is not present in the non-invoiced set but exists as invoiced (or is absent due to prior sample invoicing behavior), call the new reset mutation, then refetch and set displayedInquiries to the final non-invoiced set. Keep existing UI labels and preserve the exact empty-state message when the final non-invoiced set is empty; log errors to console on failures."
+          "description": "Remove the hero CTA Link to \"/intake\", remove the Intake service card/section Link to \"/intake\", and update the hero/marketing copy to be Billing-focused only."
+        }
+      ]
+    },
+    {
+      "id": "REQ-81",
+      "summary": "Remove the Intake page from the TanStack Router flow and ensure visiting /intake does not show Intake UI (redirect or not-found style behavior).",
+      "acceptanceCriteria": [
+        "The TanStack Router route definition for path \"/intake\" no longer renders the Intake page UI.",
+        "Direct navigation to \"/intake\" does not display the Intake page content; users are instead sent to a Billing-relevant destination (e.g., \"/billing\") or an equivalent not-found experience.",
+        "No other existing Billing, Hospice Billing, Manifest, or Receivables routes are broken by this change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/IntakeRedirect.tsx",
+          "operation": "create",
+          "description": "Create a minimal route component used only for \"/intake\" that immediately sends users to a Billing-relevant destination (preferably \"/billing\") and does not display any Intake page content."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Expose the reset mutation hook for the LOC sample record to the Manifest LOC Billing page and ensure it integrates with existing cache invalidation so the page can refetch and render the restored inquiry without adding new user-facing text."
+          "description": "Remove the import and route configuration that renders the Intake page, and replace the \"/intake\" route with a redirect/not-found style route (e.g., using the new IntakeRedirect component) without impacting existing Billing/Hospice/Manifest/Receivables routes."
+        },
+        {
+          "path": "frontend/src/pages/Intake.tsx",
+          "operation": "delete",
+          "description": "Remove the unused Intake page implementation so it cannot be rendered by routing and is no longer part of the app flow."
         }
       ]
     }

@@ -1,62 +1,64 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T05:47:06.389Z",
+  "generatedAt": "2026-02-15T07:51:33.020Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 2,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-49",
-        "summary": "Ensure that clicking the “Display” button on the Manifest LOC Billing page reliably results in the sample inquiry record being shown in the grid with these exact values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”, even if the record was previously invoiced.",
+        "id": "REQ-79",
+        "summary": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ManifestLocBilling.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ManifestLocBilling.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/Header.tsx"
         ]
       },
       {
-        "id": "REQ-50",
-        "summary": "Add backend support to delete previously created invoice(s) that correspond to the Manifest LOC Billing sample record and restore the sample inquiry’s availability so it can be displayed again.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-51",
-        "summary": "Update the Manifest LOC Billing page’s “Display” click flow to use the new backend reset capability when the sample inquiry is missing due to being previously invoiced, then re-fetch and render the restored inquiry in the grid.",
+        "id": "REQ-80",
+        "summary": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ManifestLocBilling.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/Home.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ManifestLocBilling.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/Home.tsx"
+        ]
+      },
+      {
+        "id": "REQ-81",
+        "summary": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/IntakeRedirect.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/Intake.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/IntakeRedirect.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/Intake.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/ManifestLocBilling.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/pages/Home.tsx",
+    "frontend/src/pages/Intake.tsx",
+    "frontend/src/pages/IntakeRedirect.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

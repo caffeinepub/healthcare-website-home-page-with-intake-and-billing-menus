@@ -8,6 +8,8 @@ import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+
+
 actor {
   // Initialize the access control system
   let accessControlState = AccessControl.initState();
@@ -20,6 +22,7 @@ actor {
     dueDate : Text;
     status : Text;
     clientName : Text;
+    payerSource : Text;
     owner : ?Principal;
   };
 
@@ -51,8 +54,11 @@ actor {
   let inquiries = Map.empty<Nat, Inquiry>();
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Flag to track if the sample inquiry is available
+  // Flag to track if the sample inquiry is available for creating NEW invoices
   var isLOCSampleAvailable = true;
+
+  // Anonymous principal constant for comparison
+  let anonymousPrincipal = Principal.fromText("2vxsx-fae");
 
   // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -76,12 +82,29 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Invoice Management
-  public shared ({ caller }) func createInvoice(projectName : Text, amountDue : Float, dueDate : Text, clientName : Text) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+  /// --- Invoice Management
+
+  /// Create invoice (can be anonymous for LOC, otherwise must be logged in)
+  public shared ({ caller }) func createInvoice(
+    projectName : Text,
+    amountDue : Float,
+    dueDate : Text,
+    clientName : Text,
+    payerSource : Text,
+  ) : async Nat {
+    // Check if this is a LOC invoice based on specific criteria
+    let isLOCInvoice = projectName == "LOC Inquiry" and clientName == "PhilipTest" and amountDue == 3100.0;
+
+    // Check if caller is anonymous
+    let isAnonymous = caller == anonymousPrincipal;
+
+    // Authorization: Allow anonymous users ONLY for LOC invoices
+    // For all other invoices, require authenticated user
+    if (not isLOCInvoice and not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create invoices");
     };
 
+    // Invoices created by anonymous principal will have a \`null\` owner
     let invoice : Invoice = {
       id = nextInvoiceId;
       projectName;
@@ -89,9 +112,16 @@ actor {
       dueDate;
       status = "pending";
       clientName;
-      owner = ?caller;
+      payerSource;
+      owner = if (isLOCInvoice and isAnonymous) { null } else { ?caller };
     };
     invoices.add(nextInvoiceId, invoice);
+
+    // Update LOC sample availability state when creating the LOC sample invoice
+    if (isLOCInvoice) {
+      isLOCSampleAvailable := false;
+    };
+
     nextInvoiceId += 1;
     invoice.id;
   };
@@ -116,6 +146,7 @@ actor {
           dueDate = invoice.dueDate;
           clientName = invoice.clientName;
           status = "paid";
+          payerSource = invoice.payerSource;
           owner = invoice.owner;
         };
         invoices.add(invoiceId, updatedInvoice);
@@ -181,16 +212,54 @@ actor {
     filtered.toArray();
   };
 
-  public shared ({ caller }) func deleteInvoice(invoiceId : Nat) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete invoices");
-    };
+  // LOC Receivables are accessible to all authenticated users (including guests)
+  // This allows the LOC workflow to function for both anonymous and authenticated users
+  // Anonymous users can view LOC receivables to see if their invoice was created
+  // Authenticated users can view LOC receivables as part of the billing workflow
+  public query ({ caller }) func getLOCReceivables() : async [Invoice] {
+    // No authorization check - accessible to everyone including anonymous users
+    // This is intentional for the LOC billing workflow where anonymous users
+    // need to verify their invoice creation and deletion
+    invoices.values().filter(
+      func(invoice) {
+        invoice.projectName == "LOC Inquiry" and invoice.status == "pending";
+      }
+    ).toArray();
+  };
 
+  /// Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+  public shared ({ caller }) func deleteInvoice(invoiceId : Nat) : async Bool {
     switch (invoices.get(invoiceId)) {
       case (null) { false };
       case (?invoice) {
+        let isLOCInvoice = invoice.projectName == "LOC Inquiry" and invoice.clientName == "PhilipTest" and invoice.amountDue == 3100.0;
+        let isAnonymousOwner = switch (invoice.owner) {
+          case (null) { true };
+          case (?_owner) { false };
+        };
+
+        // Special handling for anonymous LOC invoices: allow ANYONE (including anonymous) to delete
+        if (isLOCInvoice and isAnonymousOwner) {
+          // Restore sample availability after deletion
+          isLOCSampleAvailable := true;
+
+          invoices.remove(invoiceId);
+          return true;
+        };
+
+        // For regular invoices (non-LOC or owned LOC invoices), require user permission
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Runtime.trap("Unauthorized: Only users can delete invoices");
+        };
+
+        // Check ownership or admin rights for regular invoices
         if (invoice.owner != ?caller and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: Can only delete your own invoices");
+        };
+
+        // If this is a LOC invoice being deleted, restore availability
+        if (isLOCInvoice) {
+          isLOCSampleAvailable := true;
         };
 
         invoices.remove(invoiceId);
@@ -255,11 +324,10 @@ actor {
 
   // Manifest LOC Billing Specific Functions
 
+  // Allow both anonymous and authenticated users to display LOC inquiries only when available
   public query ({ caller }) func displayLOCInquiry() : async ?LOCInquiry {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view inquiries");
-    };
-
+    // No authorization check - accessible to everyone including anonymous users
+    // This is intentional for the LOC billing workflow
     if (isLOCSampleAvailable) {
       ?{
         client = "PhilipTest";
@@ -269,17 +337,8 @@ actor {
         amount = 3100;
       };
     } else {
+      // Explicitly return null when the sample is not available
       null;
     };
-  };
-
-  public shared ({ caller }) func deleteLOCInvoice() : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can delete LOC invoices");
-    };
-
-    // Reset the sample inquiry availability
-    isLOCSampleAvailable := true;
-    true;
   };
 };

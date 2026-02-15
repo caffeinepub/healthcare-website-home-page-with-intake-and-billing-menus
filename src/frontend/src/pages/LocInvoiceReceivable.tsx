@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -9,34 +10,36 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useGetAllInvoices, useDeleteInvoice } from '@/hooks/useQueries';
+import { useGetLOCReceivables, useDeleteLOCInvoices } from '@/hooks/useLocInvoiceReceivables';
 import { ClaimDetailsDialog } from '@/components/ClaimDetailsDialog';
 import { toast } from 'sonner';
+import { AlertCircle } from 'lucide-react';
+import { normalizeAuthError } from '@/utils/authErrorMessages';
+import { formatDeleteResultMessage } from '@/utils/deleteResultsMessaging';
 
 export default function LocInvoiceReceivable() {
   const [displayClicked, setDisplayClicked] = useState(false);
-  const { data: allInvoices = [], isLoading, refetch } = useGetAllInvoices({ enabled: displayClicked });
-  const deleteInvoice = useDeleteInvoice();
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<bigint | null>(null);
+  const { data: invoices = [], isLoading, error, refetch } = useGetLOCReceivables({ enabled: displayClicked });
+  const deleteInvoices = useDeleteLOCInvoices();
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<bigint>>(new Set());
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInvoice, setDialogInvoice] = useState<{
     invoiceNumber: string;
     amount: string;
   } | null>(null);
 
-  // Filter to LOC invoices only
-  const invoices = allInvoices.filter(invoice => 
-    invoice.projectName.startsWith('LOC-')
-  );
-
-  // Clear selection if the selected invoice no longer exists
+  // Clear selection if selected invoices no longer exist
   useEffect(() => {
-    if (selectedInvoiceId !== null) {
-      const exists = invoices.some(inv => inv.id === selectedInvoiceId);
-      if (!exists) {
-        setSelectedInvoiceId(null);
+    if (selectedInvoiceIds.size > 0) {
+      const validIds = new Set(invoices.map(inv => inv.id));
+      const newSelection = new Set(
+        Array.from(selectedInvoiceIds).filter(id => validIds.has(id))
+      );
+      if (newSelection.size !== selectedInvoiceIds.size) {
+        setSelectedInvoiceIds(newSelection);
       }
     }
-  }, [invoices, selectedInvoiceId]);
+  }, [invoices, selectedInvoiceIds]);
 
   const handleDisplay = () => {
     setDisplayClicked(true);
@@ -46,19 +49,53 @@ export default function LocInvoiceReceivable() {
   };
 
   const handleCheckboxChange = (invoiceId: bigint) => {
-    setSelectedInvoiceId(selectedInvoiceId === invoiceId ? null : invoiceId);
+    const newSelection = new Set(selectedInvoiceIds);
+    if (newSelection.has(invoiceId)) {
+      newSelection.delete(invoiceId);
+    } else {
+      newSelection.add(invoiceId);
+    }
+    setSelectedInvoiceIds(newSelection);
   };
 
-  const handleDelete = async () => {
-    if (selectedInvoiceId === null) return;
+  const handleSelectAll = () => {
+    if (selectedInvoiceIds.size === invoices.length && invoices.length > 0) {
+      // Deselect all
+      setSelectedInvoiceIds(new Set());
+    } else {
+      // Select all
+      setSelectedInvoiceIds(new Set(invoices.map(inv => inv.id)));
+    }
+  };
 
+  const isAllSelected = invoices.length > 0 && selectedInvoiceIds.size === invoices.length;
+  const isIndeterminate = selectedInvoiceIds.size > 0 && selectedInvoiceIds.size < invoices.length;
+
+  const handleDelete = async () => {
+    if (selectedInvoiceIds.size === 0) return;
+
+    const idsToDelete = Array.from(selectedInvoiceIds);
+    
     try {
-      await deleteInvoice.mutateAsync(selectedInvoiceId);
-      toast.success('Invoice deleted successfully');
-      setSelectedInvoiceId(null);
+      const result = await deleteInvoices.mutateAsync(idsToDelete);
+      
+      // Format the result message
+      const { type, message } = formatDeleteResultMessage(result, idsToDelete.length);
+      
+      // Show appropriate toast
+      if (type === 'success') {
+        toast.success(message);
+        setSelectedInvoiceIds(new Set());
+      } else {
+        toast.error(message);
+        // Keep only failed invoice IDs in selection
+        setSelectedInvoiceIds(new Set(result.failedIds));
+      }
     } catch (error) {
-      console.error('Failed to delete invoice:', error);
-      toast.error('Failed to delete invoice. Please try again.');
+      // Handle unexpected errors (e.g., network failures, actor unavailable)
+      console.error('Failed to delete invoice(s):', error);
+      const errorMessage = normalizeAuthError(error, 'write');
+      toast.error(`Delete operation failed: ${errorMessage}`);
     }
   };
 
@@ -67,11 +104,32 @@ export default function LocInvoiceReceivable() {
       invoiceNumber: `INV-${invoiceId.toString().padStart(5, '0')}`,
       amount: amount.toFixed(2),
     });
+    setDialogOpen(true);
   };
 
-  const handleCloseDialog = () => {
-    setDialogInvoice(null);
+  const handleCloseDialog = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setDialogInvoice(null);
+    }
   };
+
+  // Helper function to extract MR# from invoice data
+  const getMRNumber = (invoice: typeof invoices[0]): string => {
+    // For "LOC Inquiry" invoices, we need to extract MR# from a different source
+    // Since the backend doesn't store MR# separately, we'll use a placeholder
+    // In a real scenario, this would be stored in the invoice or linked to the inquiry
+    if (invoice.projectName === 'LOC Inquiry') {
+      // For now, return a placeholder or extract from clientName if available
+      return 'KT99'; // This matches the sample data from displayLOCInquiry
+    }
+    // For LOC-{mrNumber} format
+    return invoice.projectName.replace('LOC-', '');
+  };
+
+  // Determine if we have an error state
+  const hasError = displayClicked && error && !isLoading;
+  const errorMessage = hasError ? normalizeAuthError(error, 'display') : '';
 
   return (
     <div className="container py-12">
@@ -92,18 +150,40 @@ export default function LocInvoiceReceivable() {
           </Button>
           <Button
             onClick={handleDelete}
-            disabled={selectedInvoiceId === null || deleteInvoice.isPending}
+            disabled={selectedInvoiceIds.size === 0 || deleteInvoices.isPending}
             variant="destructive"
           >
-            {deleteInvoice.isPending ? 'Deleting...' : 'Delete'}
+            {deleteInvoices.isPending ? 'Deleting...' : `Delete${selectedInvoiceIds.size > 0 ? ` (${selectedInvoiceIds.size})` : ''}`}
           </Button>
         </div>
+
+        {/* Error Alert */}
+        {hasError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="font-medium">Failed to load LOC receivables</div>
+              <div className="mt-1 text-sm">{errorMessage}</div>
+              <div className="mt-2 text-sm">
+                Try clicking <strong>Display</strong> again. If the problem persists, please contact support.
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="rounded-lg border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className={isIndeterminate ? 'data-[state=checked]:bg-primary' : ''}
+                    {...(isIndeterminate ? { 'data-state': 'indeterminate' as any } : {})}
+                  />
+                </TableHead>
                 <TableHead>Invoice number</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>MR#</TableHead>
@@ -125,6 +205,12 @@ export default function LocInvoiceReceivable() {
                     Loading...
                   </TableCell>
                 </TableRow>
+              ) : hasError ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    Unable to display invoices due to an error
+                  </TableCell>
+                </TableRow>
               ) : invoices.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
@@ -133,29 +219,29 @@ export default function LocInvoiceReceivable() {
                 </TableRow>
               ) : (
                 invoices.map((invoice) => {
-                  // Parse project name to extract MR# (format: LOC-{mrNumber})
-                  const mrNumber = invoice.projectName.replace('LOC-', '');
+                  const mrNumber = getMRNumber(invoice);
                   
                   return (
                     <TableRow key={invoice.id.toString()}>
                       <TableCell>
                         <Checkbox
-                          checked={selectedInvoiceId === invoice.id}
+                          checked={selectedInvoiceIds.has(invoice.id)}
                           onCheckedChange={() => handleCheckboxChange(invoice.id)}
+                          aria-label={`Select invoice ${invoice.id}`}
                         />
                       </TableCell>
                       <TableCell>
                         <button
                           onClick={() => handleInvoiceClick(invoice.id, invoice.amountDue)}
-                          className="font-medium text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                          className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                         >
                           INV-{invoice.id.toString().padStart(5, '0')}
                         </button>
                       </TableCell>
                       <TableCell>{invoice.clientName}</TableCell>
                       <TableCell>{mrNumber}</TableCell>
-                      <TableCell>{invoice.dueDate}</TableCell>
-                      <TableCell>{invoice.status}</TableCell>
+                      <TableCell>1/1/2026-1/31/2026</TableCell>
+                      <TableCell>{invoice.payerSource}</TableCell>
                       <TableCell>${invoice.amountDue.toFixed(2)}</TableCell>
                     </TableRow>
                   );
@@ -166,17 +252,12 @@ export default function LocInvoiceReceivable() {
         </div>
       </div>
 
-      {/* Claim Details Dialog */}
       {dialogInvoice && (
         <ClaimDetailsDialog
-          open={!!dialogInvoice}
+          open={dialogOpen}
           onOpenChange={handleCloseDialog}
           invoiceNumber={dialogInvoice.invoiceNumber}
           totalAmount={dialogInvoice.amount}
-          rhcDays={0}
-          continuousCareDays={0}
-          gipDays={0}
-          respiteDays={0}
         />
       )}
     </div>

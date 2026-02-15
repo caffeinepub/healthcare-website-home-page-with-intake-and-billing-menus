@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 37,
-  "summary": "Extend navigation and billing workflows so that once an invoice is created from a Manifest inquiry page, the invoiced record is removed from the inquiry grid; add selection and deletion capabilities on LOC/R&B Receivables pages; and when a created invoice is deleted from receivables, the corresponding record reappears in the inquiry grid upon Display to allow re-creation.",
+  "projectStateVersion": 59,
+  "summary": "Shift the app to a Billing-only experience: remove the Intake top-level navigation and all Intake-related pages/content so only Billing workflows remain (including Hospice Billing inquiry pages and Account receivables).",
   "architectural_notes": [
     "Rename the Account submenu/page label from \"R&B invoice receivable\" to \"R&B Receivables\" (update navigation text and matching page header accordingly).",
     "Rename the Account submenu/page label from \"LOC invoice receivable\" to \"LOC Receivables\" (update navigation text and matching page header accordingly).",
@@ -10,15 +10,23 @@
     "Add a selectable checkbox column on LOC Receivables and R&B Receivables grids for selecting receivable rows.",
     "Add a Delete action/button on LOC Receivables and R&B Receivables pages to remove selected created invoices.",
     "Deleting an invoice from receivables should make the associated inquiry record available again on the inquiry page when Display is clicked, enabling re-creation.",
-    "Add a \"Display\" button on LOC Receivables and R&B Receivables pages to fetch and display the created invoice receivables (from backend), similar to inquiry pages' Display behavior."
+    "Add a \"Display\" button on LOC Receivables and R&B Receivables pages to fetch and display the created invoice receivables (from backend), similar to inquiry pages' Display behavior.",
+    "Display actions (inquiry/receivables) must not trigger a login prompt; adjust auth/route guards so signed-in users can fetch/display records without additional authentication challenges.",
+    "Create Invoice action (on Manifest inquiry/billing pages) must not trigger a login prompt; adjust auth/route guards so invoice creation can be performed without additional authentication challenges."
   ],
   "known_issues": [
     "Invoice-number click currently opens an improper UB04 popup; should instead open the new \"Claim details\" popup with totals and day-type counts.",
     "Navigation menus/routes are not working after the latest changes (e.g., Inquiry and Receivables pages are not accessible via menus).",
     "Display button is not functioning on the Manifest LOC Billing (LOC manifest inquiry) page.",
-    "Manifest LOC Billing (LOC manifest inquiry) Display click is not showing the expected sample record (PhilipTest / KT99 / 1/1/2026–1/31/2026 / NGS / 3100); may be filtered out as already invoiced and requires confirming/deleting existing created invoices."
+    "Manifest LOC Billing (LOC manifest inquiry) Display click is not showing the expected sample record (PhilipTest / KT99 / 1/1/2026–1/31/2026 / NGS / 3100); may be filtered out as already invoiced and requires confirming/deleting existing created invoices.",
+    "Manifest LOC Billing page: Display action still not working (still not populating/showing expected records).",
+    "Authentication error occurs when clicking the \"Display\" button (user cannot fetch/display inquiry/receivables data).",
+    "User is being prompted to log in when clicking Display; login/auth gating must be removed or adjusted so records can be displayed.",
+    "User is being prompted to log in when clicking \"Create Invoice\"; login/auth gating must be removed or adjusted so invoices can be created.",
+    "Receivables page shows incorrect Payersource value (shows \"pending\" instead of expected \"NGS\" for the sample invoice).",
+    "Manifest billing/inquiry Display still lists records that already have an invoice created (e.g., PhilipTest) even though the invoice is present in Receivables; invoiced inquiries should be hidden until the invoice is deleted, then reappear after deletion."
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-create-a-home-page-for-a-healthcare-web-application-that-prominently-displays-a-navigation-menu-with-exactly-two-items-intake-and-billing",
@@ -403,15 +411,153 @@
         "REQ-51"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-frontend-manifest-loc-billing-display-click-behavior-frontend-src-pages-manifestlocbilling-tsx-frontend-src-hooks-usequeries-ts-so-clicking-display-reliably-populates-the-grid-with-the-latest-backend-inquiry-data-and-if-missing-triggers-the-backend-reset-then-re-fetches-and-renders-the-restored-record",
+      "title": "Fix the frontend Manifest LOC Billing Display click behavior (frontend/src/pages/ManifestLocBilling.tsx + frontend/src/hooks/useQueries.ts) so clicking Display reliably populates the grid with the latest backend inquiry data and, if missing, triggers the backend reset then re-fetches and renders the restored record.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-clicking-the-display-button-on-the-manifest-loc-billing-page-can-successfully-fetch-and-render-the-loc-inquiry-without-triggering-an-authentication-authorization-trap-for-normal-app-users",
+      "title": "Ensure clicking the “Display” button on the “Manifest LOC Billing” page can successfully fetch and render the LOC inquiry without triggering an authentication/authorization trap for normal app users.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-error-handling-for-the-manifest-loc-billing-display-flow-so-that-authorization-failures-are-presented-as-a-clear-user-actionable-message-and-do-not-leave-the-page-in-a-broken-loading-state",
+      "title": "Update frontend error handling for the Manifest LOC Billing Display flow so that authorization failures are presented as a clear, user-actionable message and do not leave the page in a broken loading state.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-so-the-display-button-can-fetch-and-show-records-without-requiring-the-user-to-log-in-no-login-prompt-no-authentication-gating-and-no-sign-in-required-banner-for-viewing-displaying-records",
+      "title": "Update the Manifest LOC Billing page (frontend/src/pages/ManifestLocBilling.tsx) so the “Display” button can fetch and show records without requiring the user to log in (no login prompt, no authentication gating, and no “Sign in required” banner for viewing/displaying records).",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-frontend-login-authentication-gating-for-the-create-invoice-action-on-the-manifest-loc-billing-page-frontend-src-pages-manifestlocbilling-tsx-so-a-user-can-create-an-invoice-for-a-selected-displayed-record-without-logging-in",
+      "title": "Remove all frontend login/authentication gating for the \"Create Invoice\" action on the Manifest LOC Billing page (frontend/src/pages/ManifestLocBilling.tsx) so a user can create an invoice for a selected displayed record without logging in.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-loc-receivables-page-so-that-an-invoice-created-from-the-manifest-loc-billing-flow-is-eligible-to-be-displayed-in-the-loc-receivables-grid",
+      "title": "Fix the LOC Receivables page so that an invoice created from the Manifest LOC Billing flow is eligible to be displayed in the LOC receivables grid.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-loc-receivables-page-data-loading-to-use-the-new-backend-loc-receivables-listing-method-instead-of-the-generic-getallinvoices-so-that-loc-invoices-created-without-login-are-still-visible-when-the-user-clicks-display",
+      "title": "Update the frontend LOC Receivables page data-loading to use the new backend LOC receivables listing method (instead of the generic getAllInvoices) so that LOC invoices created without login are still visible when the user clicks \"Display\".",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-receivables-grid-so-the-payersource-column-displays-the-actual-payer-source-e-g-for-the-sample-loc-receivable-it-must-show-ngs-instead-of-incorrectly-showing-the-invoice-status-value-e-g-pending",
+      "title": "Fix the Receivables grid so the “Payersource” column displays the actual payer source (e.g., for the sample LOC receivable it must show “NGS”) instead of incorrectly showing the invoice status value (e.g., “pending”).",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-deleting-selected-receivable-invoice-s-removes-them-from-the-receivables-grid-immediately-after-the-delete-succeeds-without-requiring-a-manual-page-refresh-or-re-clicking-display",
+      "title": "Ensure deleting selected receivable invoice(s) removes them from the Receivables grid immediately after the delete succeeds, without requiring a manual page refresh or re-clicking “Display”.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-select-all-checkbox-in-the-receivables-grid-header-to-select-deselect-all-currently-displayed-invoices-and-update-delete-to-support-deleting-multiple-selected-invoices-in-one-action",
+      "title": "Add a “Select all” checkbox in the receivables grid header to select/deselect all currently displayed invoices, and update Delete to support deleting multiple selected invoices in one action.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-loc-receivables-page-handle-loc-receivables-fetch-failures-clearly-so-users-can-tell-when-invoices-are-not-listed-due-to-a-loading-error-e-g-authorization-trap-rather-than-because-there-are-truly-no-receivables",
+      "title": "On the LOC Receivables page, handle LOC receivables fetch failures clearly so users can tell when invoices are not listed due to a loading error (e.g., authorization trap) rather than because there are truly no receivables.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-frontend-receivables-delete-flow-loc-receivables-and-r-b-receivables-so-that-after-selecting-one-or-more-rows-and-clicking-delete-the-selected-invoices-are-removed-from-the-grid-immediately-after-the-delete-succeeds-without-requiring-a-manual-page-refresh-or-re-clicking-display",
+      "title": "Fix the frontend Receivables Delete flow (LOC Receivables and R&B Receivables) so that after selecting one or more rows and clicking Delete, the selected invoices are removed from the grid immediately after the delete succeeds, without requiring a manual page refresh or re-clicking Display.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-loc-receivables-bulk-delete-flow-so-it-does-not-incorrectly-report-failure-when-some-or-all-selected-invoices-were-actually-deleted-and-so-that-successful-deletions-always-remove-invoices-from-the-grid-immediately",
+      "title": "Fix the LOC Receivables bulk Delete flow so it does not incorrectly report failure when some or all selected invoices were actually deleted, and so that successful deletions always remove invoices from the grid immediately.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-user-facing-delete-results-messaging-on-receivables-pages-to-clearly-distinguish-between-a-all-deleted-successfully-b-partially-deleted-and-c-none-deleted-and-include-actionable-error-detail-when-failures-occur-in-english",
+      "title": "Update the user-facing Delete results messaging on Receivables pages to clearly distinguish between: (a) all deleted successfully, (b) partially deleted, and (c) none deleted, and include actionable error detail when failures occur (in English).",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-loc-billing-page-display-click-flow-frontend-src-pages-manifestlocbilling-tsx-so-that-it-does-not-automatically-call-the-admin-only-reset-capability-when-no-inquiry-is-returned-instead-it-must-simply-show-the-existing-no-data-state-message-when-the-inquiry-is-already-invoiced-and-only-list-the-inquiry-again-after-the-invoice-has-been-deleted-from-loc-receivables",
+      "title": "Update the Manifest LOC Billing page Display click flow (frontend/src/pages/ManifestLocBilling.tsx) so that it does not automatically call the admin-only reset capability when no inquiry is returned; instead, it must simply show the existing no-data state message when the inquiry is already invoiced, and only list the inquiry again after the invoice has been deleted from LOC Receivables.",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-intake-top-level-navigation-item-from-the-header-so-the-primary-navigation-is-billing-focused-and-no-intake-menu-entry-is-shown-anywhere-in-the-header-ui",
+      "title": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-patient-intake-intake-promotional-content-from-the-home-dashboard-landing-page-so-the-dashboard-presents-a-billing-only-experience-e-g-remove-the-intake-cta-button-link-remove-the-intake-service-card-section-and-remove-intake-related-marketing-copy",
+      "title": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-intake-route-from-the-app-routing-configuration-so-the-intake-page-is-not-part-of-the-navigable-application-flow-ensure-that-directly-visiting-intake-does-not-present-the-intake-page-content-redirect-to-billing-or-show-a-not-found-style-outcome",
+      "title": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Create a healthcare application website with a home page menu including Intake and Billing sections",
-      "reqIds": [],
-      "status": "pending"
-    },
     {
       "id": "AR-2",
       "summary": "Rebrand/rename the healthcare website branding/text from \"Healthcare\" to \"Pinku\" across the UI",
@@ -542,6 +688,126 @@
       "reqIds": [
         "REQ-50"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Fix backend LOC sample inquiry reset and authorization so the Manifest LOC Billing page can always restore and fetch the sample inquiry when Display is clicked (including when it was previously invoiced).",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Ensure backend LOC sample availability toggles correctly with the existing invoice lifecycle so Display behaves predictably: after creating an invoice from the LOC sample inquiry the sample inquiry becomes unavailable (displayLOCInquiry returns null), and after deleting that LOC invoice the sample inquiry becomes available again.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Adjust backend authorization for LOC inquiry display so that it aligns with the frontend’s Display flow (which may be executed by any signed-in user) and does not require admin privileges or a secret token to read the LOC inquiry.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Remove/disable login/authentication gating for the Display action so users can display records without being prompted to log in",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Update the backend method that serves the LOC inquiry (displayLOCInquiry in backend/main.mo) so it can be called successfully by anonymous users (i.e., it must not trap due to missing user/admin permissions) to support unauthenticated Display/viewing of records.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Remove/disable login/authentication gating for the \"Create Invoice\" action so users can create invoices without being prompted to log in",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Update the backend invoice-creation behavior so that invoices can be created by anonymous (not logged-in) users when the frontend calls the existing backend invoice creation method from the Manifest LOC Billing page.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add a backend query method dedicated to listing LOC receivables that includes LOC invoices created anonymously (owner = null) so they can be displayed on the LOC Receivables page without requiring admin privileges.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Add a header \"Select All\" checkbox on Receivables grids to select/deselect all invoices for bulk actions like deletion",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Update the backend LOC receivables listing method so that LOC receivables can be fetched successfully even when the frontend is using an anonymous actor, and so that invoices created anonymously from the Manifest LOC Billing flow are included in the returned list.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Fix backend deletion for LOC receivables so that invoices created anonymously (owner = null) can be deleted from the Receivables pages without authorization traps, and the delete operation actually removes the invoice from storage.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Ensure backend deletion restores the LOC sample inquiry availability when the deleted invoice corresponds to the LOC sample flow (\"LOC Inquiry\" invoice created from the sample inquiry), so the Manifest LOC Billing Display flow can show the inquiry again after deletion.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Allow deleting the anonymous LOC sample invoices from the Receivables UI without requiring the user to be signed in, so bulk deletion does not fail due to authorization when the frontend is using an anonymous actor.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-47",
+      "summary": "Update the backend LOC sample inquiry lifecycle so that once a LOC invoice is created for the sample inquiry (Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”), the Manifest LOC Billing Display flow does not return/list that inquiry again until the corresponding invoice is deleted from the LOC Receivables page.",
+      "reqIds": [
+        "REQ-76"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Ensure backend createInvoice updates LOC sample availability state when creating the LOC sample invoice via the regular createInvoice method (i.e., when projectName is “LOC Inquiry” and the invoice matches the sample inquiry), so the inquiry is treated as invoiced immediately after creation.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "Remove the Intake menu and all Intake-related pages/content (including the patient intake dashboard section/blogs) so the UI is Billing-only",
+      "reqIds": [],
       "status": "pending"
     }
   ],

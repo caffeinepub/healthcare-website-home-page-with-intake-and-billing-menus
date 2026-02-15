@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { FileText, DollarSign, ArrowRight } from 'lucide-react';
+import { DollarSign, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -15,22 +15,15 @@ export default function Home() {
                   <span className="text-primary">Pinku</span>
                 </h1>
                 <p className="text-lg text-muted-foreground md:text-xl">
-                  Streamlined patient intake and billing management for modern healthcare providers.
+                  Streamlined billing management for modern healthcare providers.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
-                  to="/intake"
+                  to="/billing"
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Patient Intake
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/billing"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-input bg-background px-8 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Billing
+                  Get Started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -54,33 +47,11 @@ export default function Home() {
               Our Services
             </h2>
             <p className="text-lg text-muted-foreground">
-              Comprehensive healthcare management solutions
+              Comprehensive healthcare billing solutions
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
-            {/* Intake Card */}
-            <Link
-              to="/intake"
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/50 hover:shadow-lg"
-            >
-              <div className="flex flex-col space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <FileText className="h-7 w-7" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-semibold tracking-tight">Intake</h3>
-                  <p className="text-muted-foreground">
-                    Efficient patient registration and information collection. Streamline your intake process with our comprehensive forms and data management.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                  Get Started
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </div>
-              </div>
-            </Link>
-
+          <div className="grid gap-8 md:grid-cols-1 max-w-2xl mx-auto">
             {/* Billing Card */}
             <Link
               to="/billing"

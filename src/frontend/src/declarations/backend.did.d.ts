@@ -23,6 +23,7 @@ export interface Invoice {
   'clientName' : string,
   'owner' : [] | [Principal],
   'dueDate' : string,
+  'payerSource' : string,
   'amountDue' : number,
 }
 export interface LOCInquiry {
@@ -44,9 +45,18 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createInquiry' : ActorMethod<[string], bigint>,
-  'createInvoice' : ActorMethod<[string, number, string, string], bigint>,
+  /**
+   * / --- Invoice Management
+   * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
+   */
+  'createInvoice' : ActorMethod<
+    [string, number, string, string, string],
+    bigint
+  >,
+  /**
+   * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+   */
   'deleteInvoice' : ActorMethod<[bigint], boolean>,
-  'deleteLOCInvoice' : ActorMethod<[], boolean>,
   'displayLOCInquiry' : ActorMethod<[], [] | [LOCInquiry]>,
   'getAllInvoices' : ActorMethod<[], Array<Invoice>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -55,6 +65,7 @@ export interface _SERVICE {
   'getInvoice' : ActorMethod<[bigint], [] | [Invoice]>,
   'getInvoicesByClient' : ActorMethod<[string], Array<Invoice>>,
   'getInvoicesByStatus' : ActorMethod<[string], Array<Invoice>>,
+  'getLOCReceivables' : ActorMethod<[], Array<Invoice>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'markInquiryAsInvoiced' : ActorMethod<[bigint, boolean], boolean>,

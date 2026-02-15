@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/sonner';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Intake from './pages/Intake';
+import IntakeRedirect from './pages/IntakeRedirect';
 import Billing from './pages/Billing';
 import HospiceBilling from './pages/HospiceBilling';
 import ManifestLocBilling from './pages/ManifestLocBilling';
@@ -50,7 +50,7 @@ const indexRoute = createRoute({
 const intakeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/intake',
-  component: Intake,
+  component: IntakeRedirect,
 });
 
 const billingRoute = createRoute({

@@ -1,76 +1,88 @@
 {
   "kind": "build_request",
-  "title": "Fix Manifest LOC Billing Display to show sample record by resetting previously created invoices when needed",
+  "title": "Remove Intake navigation and Intake dashboard content for a Billing-only experience",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-49",
-      "text": "Ensure that clicking the “Display” button on the Manifest LOC Billing page reliably results in the sample inquiry record being shown in the grid with these exact values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”, even if the record was previously invoiced.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "On click on display button on manifest loc billing page this record should display ... This record is not coming on clicking on display from manifest loc inquiry page, if it is due to already created please delete the created invoices"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On the Manifest LOC Billing page, clicking “Display” shows a row with Client=PhilipTest, MR#=KT99, Statement period=1/1/2026–1/31/2026, Payer/Payorsource=NGS, Amount=3100.",
-        "If the sample inquiry exists in backend state but is currently marked as invoiced (and thus would be filtered out), the system automatically makes it available again so it appears after clicking “Display”.",
-        "The “Display” action continues to exclude other inquiries that are marked as invoiced; only the sample record is force-restored to satisfy the required display behavior."
-      ]
-    },
-    {
-      "id": "REQ-50",
-      "text": "Add backend support to delete previously created invoice(s) that correspond to the Manifest LOC Billing sample record and restore the sample inquiry’s availability so it can be displayed again.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "if it is due to already created please delete the created invoices"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new backend method exists that, for the current caller (or admin), deletes invoice(s) associated with the LOC sample record (PhilipTest / KT99) and sets the matching inquiry’s isInvoiced flag back to false.",
-        "After calling this backend method, subsequent calls to getInquiries() include the sample inquiry with isInvoiced=false (visible to the caller), without requiring manual state edits.",
-        "The method enforces the same authorization rules as existing invoice/inquiry mutations (users can only affect their own data unless admin)."
-      ]
-    },
-    {
-      "id": "REQ-51",
-      "text": "Update the Manifest LOC Billing page’s “Display” click flow to use the new backend reset capability when the sample inquiry is missing due to being previously invoiced, then re-fetch and render the restored inquiry in the grid.",
+      "id": "REQ-79",
+      "text": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "recent-messages-3"
         ],
         "quotes": [
-          "This record is not coming on clicking on display from manifest loc inquiry page, if it is due to already created please delete the created invoices"
+          "1. Remove the Intake Menu and its associated blogs its not required"
         ]
       },
       "acceptanceCriteria": [
-        "When “Display” is clicked and the sample inquiry is not found among non-invoiced inquiries, the page triggers the backend reset for the sample record, then refetches inquiries and renders the sample row.",
-        "No new user-facing text is required beyond existing UI labels; if an error occurs, it may be logged to console as currently done, but the normal success path must show the sample row.",
-        "The grid still shows the exact empty-state message “No record, Click on display button” only when there are no available (non-invoiced) inquiries after the display flow completes."
+        "The header no longer renders a top-level navigation link labeled \"Intake\".",
+        "The remaining header menus (e.g., Billing and Account) continue to function and open/close as before."
+      ]
+    },
+    {
+      "id": "REQ-80",
+      "text": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-3"
+        ],
+        "quotes": [
+          "2. Remove patient intake from dashboad I only want billing"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Home page no longer contains a CTA button/link that navigates to \"/intake\" or is labeled \"Patient Intake\"/\"Intake\".",
+        "Home page no longer contains an \"Intake\" service card or any intake-related \"blog\"/feature highlight content.",
+        "Any remaining Home page descriptive text is updated so it does not mention patient intake (Billing-focused copy only)."
+      ]
+    },
+    {
+      "id": "REQ-81",
+      "text": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-3"
+        ],
+        "quotes": [
+          "1. Remove the Intake Menu and its associated blogs its not required",
+          "2. Remove patient intake from dashboad I only want billing"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The TanStack Router route definition for path \"/intake\" no longer renders the Intake page UI.",
+        "Direct navigation to \"/intake\" does not display the Intake page content; users are instead sent to a Billing-relevant destination (e.g., \"/billing\") or an equivalent not-found experience.",
+        "No other existing Billing, Hospice Billing, Manifest, or Receivables routes are broken by this change."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not modify files under frontend/src/components/ui (read-only).",
-    "Do not modify frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Use English for any user-facing text."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Do not introduce any new backend services or databases; changes in this request should be achievable purely in the frontend."
   ],
   "nonGoals": [
-    "Do not change the existing navigation/menu structure.",
-    "Do not introduce external databases or third-party services.",
-    "Do not implement new invoice formats (e.g., UB04 changes) beyond what is necessary to restore the sample inquiry record’s display behavior."
+    "Do not remove or change any Billing, Hospice Billing (Manifest LOC/R&B), or Account/Receivables functionality.",
+    "Do not change invoice creation, receivables listing, delete behavior, or the Claim details popup as part of this request.",
+    "Do not change branding assets (PD group logo) or existing generated images."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [
+      "Operate the application as a Billing-only experience (no Intake workflows)."
+    ],
+    "goalsToRemove": [],
+    "preferencesToAdd": [
+      "Remove Intake navigation and Intake-related dashboard content."
+    ],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

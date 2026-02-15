@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-that-clicking-the-display-button-on-the-manifest-loc-billing-page-reliably-results-in-the-sample-inquiry-record-being-shown-in-the-grid-with-these-exact-values-client-philiptest-mr-kt99-statement-period-1-1-2026-1-31-2026-payer-ngs-amount-3100-even-if-the-record-was-previously-invoiced",
-      "featureTitle": "Ensure that clicking the “Display” button on the Manifest LOC Billing page reliably results in the sample inquiry record being shown in the grid with these exact values: Client “PhilipTest”, MR# “KT99”, Statement period “1/1/2026–1/31/2026”, Payer “NGS”, Amount “3100”, even if the record was previously invoiced.",
+      "featureId": "feature-remove-the-intake-top-level-navigation-item-from-the-header-so-the-primary-navigation-is-billing-focused-and-no-intake-menu-entry-is-shown-anywhere-in-the-header-ui",
+      "featureTitle": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ManifestLocBilling.tsx"
+        "frontend/src/components/Header.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,16 +16,15 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-49"
+        "REQ-79"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-manifest-loc-billing-page-s-display-click-flow-to-use-the-new-backend-reset-capability-when-the-sample-inquiry-is-missing-due-to-being-previously-invoiced-then-re-fetch-and-render-the-restored-inquiry-in-the-grid",
-      "featureTitle": "Update the Manifest LOC Billing page’s “Display” click flow to use the new backend reset capability when the sample inquiry is missing due to being previously invoiced, then re-fetch and render the restored inquiry in the grid.",
+      "featureId": "feature-remove-all-patient-intake-intake-promotional-content-from-the-home-dashboard-landing-page-so-the-dashboard-presents-a-billing-only-experience-e-g-remove-the-intake-cta-button-link-remove-the-intake-service-card-section-and-remove-intake-related-marketing-copy",
+      "featureTitle": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ManifestLocBilling.tsx"
+        "frontend/src/pages/Home.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -37,7 +35,28 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-51"
+        "REQ-80"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-the-intake-route-from-the-app-routing-configuration-so-the-intake-page-is-not-part-of-the-navigable-application-flow-ensure-that-directly-visiting-intake-does-not-present-the-intake-page-content-redirect-to-billing-or-show-a-not-found-style-outcome",
+      "featureTitle": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/Intake.tsx",
+        "frontend/src/pages/IntakeRedirect.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-81"
       ],
       "confidence": "high"
     }

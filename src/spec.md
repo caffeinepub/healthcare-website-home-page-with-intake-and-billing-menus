@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Make the Manifest LOC Billing “Display” action always show the required sample inquiry row (PhilipTest / KT99) by automatically resetting/deleting its previously created invoices when it has already been invoiced.
+**Goal:** Present a Billing-only experience by removing all Intake navigation, dashboard content, and route access.
 
 **Planned changes:**
-- Backend: add a method to delete invoice(s) tied to the LOC sample record (PhilipTest / KT99) and set the matching inquiry’s `isInvoiced` back to `false`, enforcing existing authorization rules.
-- Frontend: update the Manifest LOC Billing page “Display” click flow to, when the sample inquiry is missing among non-invoiced inquiries, call the backend reset method, then re-fetch inquiries and render the restored sample row.
-- Ensure the “Display” flow continues to exclude other invoiced inquiries; only the sample record is force-restored.
+- Remove the top-level “Intake” navigation item from the header so only Billing-focused navigation remains.
+- Update the Home (dashboard/landing) page to remove all Intake promotional/marketing content (CTAs, cards/sections, and copy referencing Intake).
+- Remove the `/intake` route from the frontend routing so it no longer renders Intake content; direct visits to `/intake` will redirect to a Billing destination (e.g., `/billing`) or show a not-found style outcome.
 
-**User-visible outcome:** Clicking “Display” on the Manifest LOC Billing page reliably shows the sample row with Client=PhilipTest, MR#=KT99, Statement period=1/1/2026–1/31/2026, Payer=NGS, Amount=3100, even if it had been invoiced previously.
+**User-visible outcome:** Users will no longer see Intake anywhere in the header or Home page, and attempting to visit `/intake` will not display Intake—resulting in a Billing-focused app experience.

@@ -9,37 +9,60 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useDisplayLOCInquiry, useResetLOCSample, useCreateInvoice } from '@/hooks/useQueries';
+import { useDisplayLOCInquiry, useCreateInvoice } from '@/hooks/useQueries';
+import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { toast } from 'sonner';
 import type { LOCInquiry } from '../backend';
 
 export default function ManifestLocBilling() {
   const [displayedInquiry, setDisplayedInquiry] = useState<LOCInquiry | null>(null);
   const [isSelected, setIsSelected] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isDisplayLoading, setIsDisplayLoading] = useState(false);
 
+  const { loginStatus } = useInternetIdentity();
+  
   const { refetch: refetchLOCInquiry } = useDisplayLOCInquiry();
-  const resetLOCSample = useResetLOCSample();
   const createInvoice = useCreateInvoice();
 
   const handleDisplay = async () => {
+    // No authentication check - allow anonymous users to display
+    setIsDisplayLoading(true);
+    setShowSuccess(false);
+    
     try {
-      // First, try to fetch the LOC inquiry
+      // Fetch the LOC inquiry from backend
       const result = await refetchLOCInquiry();
-      const inquiry = result.data;
-
-      if (!inquiry) {
-        // If no inquiry is available, reset the sample and try again
-        await resetLOCSample.mutateAsync();
-        const retryResult = await refetchLOCInquiry();
-        setDisplayedInquiry(retryResult.data || null);
-      } else {
-        setDisplayedInquiry(inquiry);
+      
+      if (result.error) {
+        throw result.error;
       }
 
+      // Handle undefined by treating it as null
+      const inquiry = result.data ?? null;
+
+      // Set the displayed inquiry (null if not available)
+      setDisplayedInquiry(inquiry);
       setIsSelected(false);
-      setShowSuccess(false);
-    } catch (error) {
+      
+      if (inquiry) {
+        toast.success('LOC inquiry loaded successfully');
+      } else {
+        // When null, the inquiry has already been invoiced
+        // Show the existing "No record" message without attempting reset
+        toast.info('No LOC inquiry available');
+      }
+    } catch (error: any) {
       console.error('Failed to display LOC inquiry:', error);
+      
+      const errorMessage = error?.message || 'Failed to load LOC inquiry. Please try again.';
+      toast.error(errorMessage);
+      
+      // Reset state to allow retry
+      setDisplayedInquiry(null);
+      setIsSelected(false);
+    } finally {
+      setIsDisplayLoading(false);
     }
   };
 
@@ -54,22 +77,29 @@ export default function ManifestLocBilling() {
     try {
       // Create invoice with the inquiry details
       await createInvoice.mutateAsync({
-        projectName: `LOC-${displayedInquiry.mrNumber}`,
+        projectName: 'LOC Inquiry',
         amountDue: displayedInquiry.amount,
         dueDate: displayedInquiry.statementPeriod.split('–')[1] || displayedInquiry.statementPeriod.split('-')[1] || new Date().toLocaleDateString(),
         clientName: displayedInquiry.client,
+        payerSource: displayedInquiry.payer,
       });
 
       setShowSuccess(true);
+      toast.success('Invoice created successfully');
+      
       // Clear the displayed inquiry after creating invoice
       setDisplayedInquiry(null);
       setIsSelected(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create invoice:', error);
+      
+      // Show error message without auth-specific handling
+      const errorMessage = error?.message || 'Failed to create invoice. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
-  const isLoading = resetLOCSample.isPending || createInvoice.isPending;
+  const isLoading = isDisplayLoading || createInvoice.isPending;
 
   return (
     <div className="container py-12">
@@ -82,8 +112,8 @@ export default function ManifestLocBilling() {
         </p>
 
         <div className="mb-6 flex items-center gap-4">
-          <Button onClick={handleDisplay} disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Display'}
+          <Button onClick={handleDisplay} disabled={isLoading || loginStatus === 'logging-in'}>
+            {isDisplayLoading ? 'Loading...' : 'Display'}
           </Button>
           <Button
             onClick={handleCreateInvoice}

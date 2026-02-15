@@ -21,6 +21,7 @@ export interface Invoice {
     clientName: string;
     owner?: Principal;
     dueDate: string;
+    payerSource: string;
     amountDue: number;
 }
 export interface Inquiry {
@@ -42,9 +43,15 @@ export enum UserRole {
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createInquiry(details: string): Promise<bigint>;
-    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string): Promise<bigint>;
+    /**
+     * / --- Invoice Management
+     * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
+     */
+    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string, payerSource: string): Promise<bigint>;
+    /**
+     * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+     */
     deleteInvoice(invoiceId: bigint): Promise<boolean>;
-    deleteLOCInvoice(): Promise<boolean>;
     displayLOCInquiry(): Promise<LOCInquiry | null>;
     getAllInvoices(): Promise<Array<Invoice>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -53,6 +60,7 @@ export interface backendInterface {
     getInvoice(invoiceId: bigint): Promise<Invoice | null>;
     getInvoicesByClient(clientName: string): Promise<Array<Invoice>>;
     getInvoicesByStatus(status: string): Promise<Array<Invoice>>;
+    getLOCReceivables(): Promise<Array<Invoice>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     markInquiryAsInvoiced(inquiryId: bigint, isInvoiced: boolean): Promise<boolean>;
