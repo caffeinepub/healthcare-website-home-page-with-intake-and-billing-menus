@@ -1,88 +1,60 @@
 {
   "kind": "build_request",
-  "title": "Remove Intake navigation and Intake dashboard content for a Billing-only experience",
-  "priority": "normal",
+  "title": "Fix anonymous invoice cancellation/deletion and correct LOC SOC/Discharge dates",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-79",
-      "text": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
-      "target": "frontend",
+      "id": "REQ-89",
+      "text": "Fix invoice deletion/cancellation so it works without requiring Internet Identity sign-in for the LOC sample invoice flow (including when deleting from the LOC Receivables page and when clicking the \"Cancel Invoice\" button in the \"Claim details\" dialog).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "msg-4"
         ],
         "quotes": [
-          "1. Remove the Intake Menu and its associated blogs its not required"
+          "Delete/cancelling invoice not working, its asking for sign in to delete"
         ]
       },
       "acceptanceCriteria": [
-        "The header no longer renders a top-level navigation link labeled \"Intake\".",
-        "The remaining header menus (e.g., Billing and Account) continue to function and open/close as before."
+        "When not signed in, a user can delete LOC invoices returned by getLOCReceivables() from the LOC Receivables page using the Delete button without any sign-in prompt or authorization trap.",
+        "When not signed in, a user can delete a LOC invoice from within the \"Claim details\" popup by clicking the button labeled exactly \"Cancel Invoice\" without any sign-in prompt or authorization trap.",
+        "After a successful delete (bulk delete or Cancel Invoice), the deleted invoice(s) are removed from the LOC Receivables grid immediately (no manual refresh required).",
+        "Deleting a LOC sample invoice restores the LOC sample inquiry availability so that clicking Display on the Manifest LOC Billing page can show the LOC inquiry again afterward (as per the existing LOC sample availability lifecycle).",
+        "If a delete fails for a non-auth reason, the UI shows a clear English error message and remains usable (no stuck loading state)."
       ]
     },
     {
-      "id": "REQ-80",
-      "text": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
-      "target": "frontend",
+      "id": "REQ-90",
+      "text": "Update the LOC sample inquiry \"SOC Date\" value to \"1/1/2026\" and ensure the \"Discharge Date\" is blank/empty in the Manifest LOC Billing inquiry grid and in any stored invoice data derived from that inquiry.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "msg-4"
         ],
         "quotes": [
-          "2. Remove patient intake from dashboad I only want billing"
+          "Update the SOC Date to 1/1/2026 and discharge date blank(empty)"
         ]
       },
       "acceptanceCriteria": [
-        "Home page no longer contains a CTA button/link that navigates to \"/intake\" or is labeled \"Patient Intake\"/\"Intake\".",
-        "Home page no longer contains an \"Intake\" service card or any intake-related \"blog\"/feature highlight content.",
-        "Any remaining Home page descriptive text is updated so it does not mention patient intake (Billing-focused copy only)."
-      ]
-    },
-    {
-      "id": "REQ-81",
-      "text": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages-3"
-        ],
-        "quotes": [
-          "1. Remove the Intake Menu and its associated blogs its not required",
-          "2. Remove patient intake from dashboad I only want billing"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The TanStack Router route definition for path \"/intake\" no longer renders the Intake page UI.",
-        "Direct navigation to \"/intake\" does not display the Intake page content; users are instead sent to a Billing-relevant destination (e.g., \"/billing\") or an equivalent not-found experience.",
-        "No other existing Billing, Hospice Billing, Manifest, or Receivables routes are broken by this change."
+        "On the Manifest LOC Billing page, after clicking Display, the Status column shows SOC Date exactly \"1/1/2026\" for the PhilipTest row.",
+        "On the Manifest LOC Billing page, after clicking Display, the Status column shows Discharge Date as blank/empty for the PhilipTest row (no date text is rendered).",
+        "When creating an invoice from the displayed LOC inquiry, the invoice stores the SOC Date value as \"1/1/2026\" and stores Discharge Date as empty (null/undefined/empty string), and the LOC Receivables \"Claim details\" popup displays SOC Date as \"1/1/2026\" (and does not display any discharge date value).",
+        "The backend LOC sample invoice detection logic (used to allow anonymous behavior and to toggle sample availability) remains consistent with the updated SOC/Discharge date values, so LOC creation/deletion rules still apply to the sample invoice."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Do not introduce any new backend services or databases; changes in this request should be achievable purely in the frontend."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/src/components/ui or any frontend immutable paths listed in SYSTEM_CONTEXT.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Do not remove or change any Billing, Hospice Billing (Manifest LOC/R&B), or Account/Receivables functionality.",
-    "Do not change invoice creation, receivables listing, delete behavior, or the Claim details popup as part of this request.",
-    "Do not change branding assets (PD group logo) or existing generated images."
+    "Do not introduce new authentication providers (only Internet Identity is allowed).",
+    "Do not change navigation structure, routes, or add new pages beyond what is necessary to fix delete/cancel and SOC/Discharge date values.",
+    "Do not redesign the UI theme or styling as part of this fix."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [
-      "Operate the application as a Billing-only experience (no Intake workflows)."
-    ],
-    "goalsToRemove": [],
-    "preferencesToAdd": [
-      "Remove Intake navigation and Intake-related dashboard content."
-    ],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

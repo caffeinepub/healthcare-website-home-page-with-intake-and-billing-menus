@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Invoice, Inquiry, LOCInquiry } from '../backend';
+import type { Invoice, Inquiry, LOCInquiry, InvoiceRequest } from '../backend';
 
 // Query keys
 export const INVOICES_QUERY_KEY = ['invoices'];
@@ -90,21 +90,9 @@ export function useCreateInvoice() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: {
-      projectName: string;
-      amountDue: number;
-      dueDate: string;
-      clientName: string;
-      payerSource: string;
-    }) => {
+    mutationFn: async (invoiceRequest: InvoiceRequest) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createInvoice(
-        data.projectName,
-        data.amountDue,
-        data.dueDate,
-        data.clientName,
-        data.payerSource
-      );
+      return actor.createInvoice(invoiceRequest);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });

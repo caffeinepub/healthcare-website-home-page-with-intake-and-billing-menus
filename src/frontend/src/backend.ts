@@ -92,19 +92,25 @@ export class ExternalBlob {
 export interface LOCInquiry {
     client: string;
     statementPeriod: string;
+    socDate?: string;
     mrNumber: string;
     payer: string;
     amount: number;
+    dischargeDate?: string;
 }
 export interface Invoice {
     id: bigint;
     status: string;
+    transactionDate?: string;
     projectName: string;
     clientName: string;
     owner?: Principal;
+    socDate?: string;
     dueDate: string;
     payerSource: string;
+    invoiceDate?: string;
     amountDue: number;
+    dischargeDate?: string;
 }
 export interface Inquiry {
     id: bigint;
@@ -116,6 +122,17 @@ export interface UserProfile {
     name: string;
     email: string;
     company: string;
+}
+export interface InvoiceRequest {
+    transactionDate?: string;
+    projectName: string;
+    clientName: string;
+    socDate?: string;
+    dueDate: string;
+    payerSource: string;
+    invoiceDate?: string;
+    amountDue: number;
+    dischargeDate?: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -130,9 +147,9 @@ export interface backendInterface {
      * / --- Invoice Management
      * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
      */
-    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string, payerSource: string): Promise<bigint>;
+    createInvoice(invoiceRequest: InvoiceRequest): Promise<bigint>;
     /**
-     * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+     * / Delete Invoice - allows guest (anonymous) deletion for LOC sample
      */
     deleteInvoice(invoiceId: bigint): Promise<boolean>;
     displayLOCInquiry(): Promise<LOCInquiry | null>;
@@ -150,7 +167,7 @@ export interface backendInterface {
     markInvoiceAsPaid(invoiceId: bigint): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
 }
-import type { Invoice as _Invoice, LOCInquiry as _LOCInquiry, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { Invoice as _Invoice, InvoiceRequest as _InvoiceRequest, LOCInquiry as _LOCInquiry, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -195,17 +212,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createInvoice(arg0: string, arg1: number, arg2: string, arg3: string, arg4: string): Promise<bigint> {
+    async createInvoice(arg0: InvoiceRequest): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3, arg4);
+                const result = await this.actor.createInvoice(to_candid_InvoiceRequest_n3(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createInvoice(arg0, arg1, arg2, arg3, arg4);
+            const result = await this.actor.createInvoice(to_candid_InvoiceRequest_n3(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -227,56 +244,56 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.displayLOCInquiry();
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.displayLOCInquiry();
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllInvoices(): Promise<Array<Invoice>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllInvoices();
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllInvoices();
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getInquiries(): Promise<Array<Inquiry>> {
@@ -297,70 +314,70 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getInvoice(arg0);
-                return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getInvoice(arg0);
-            return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
         }
     }
     async getInvoicesByClient(arg0: string): Promise<Array<Invoice>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getInvoicesByClient(arg0);
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getInvoicesByClient(arg0);
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getInvoicesByStatus(arg0: string): Promise<Array<Invoice>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getInvoicesByStatus(arg0);
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getInvoicesByStatus(arg0);
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getLOCReceivables(): Promise<Array<Invoice>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getLOCReceivables();
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getLOCReceivables();
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -420,55 +437,100 @@ export class Backend implements backendInterface {
         }
     }
 }
-function from_candid_Invoice_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Invoice): Invoice {
-    return from_candid_record_n6(_uploadFile, _downloadFile, value);
+function from_candid_Invoice_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Invoice): Invoice {
+    return from_candid_record_n11(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+function from_candid_LOCInquiry_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LOCInquiry): LOCInquiry {
+    return from_candid_record_n7(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Invoice]): Invoice | null {
-    return value.length === 0 ? null : from_candid_Invoice_n5(_uploadFile, _downloadFile, value[0]);
+function from_candid_UserRole_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n15(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_LOCInquiry]): LOCInquiry | null {
+function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
+function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Invoice]): Invoice | null {
+    return value.length === 0 ? null : from_candid_Invoice_n10(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_LOCInquiry]): LOCInquiry | null {
+    return value.length === 0 ? null : from_candid_LOCInquiry_n6(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     status: string;
+    transactionDate: [] | [string];
     projectName: string;
     clientName: string;
     owner: [] | [Principal];
+    socDate: [] | [string];
     dueDate: string;
     payerSource: string;
+    invoiceDate: [] | [string];
     amountDue: number;
+    dischargeDate: [] | [string];
 }): {
     id: bigint;
     status: string;
+    transactionDate?: string;
     projectName: string;
     clientName: string;
     owner?: Principal;
+    socDate?: string;
     dueDate: string;
     payerSource: string;
+    invoiceDate?: string;
     amountDue: number;
+    dischargeDate?: string;
 } {
     return {
         id: value.id,
         status: value.status,
+        transactionDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.transactionDate)),
         projectName: value.projectName,
         clientName: value.clientName,
-        owner: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.owner)),
+        owner: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.owner)),
+        socDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.socDate)),
         dueDate: value.dueDate,
         payerSource: value.payerSource,
-        amountDue: value.amountDue
+        invoiceDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.invoiceDate)),
+        amountDue: value.amountDue,
+        dischargeDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.dischargeDate))
     };
 }
-function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    client: string;
+    statementPeriod: string;
+    socDate: [] | [string];
+    mrNumber: string;
+    payer: string;
+    amount: number;
+    dischargeDate: [] | [string];
+}): {
+    client: string;
+    statementPeriod: string;
+    socDate?: string;
+    mrNumber: string;
+    payer: string;
+    amount: number;
+    dischargeDate?: string;
+} {
+    return {
+        client: value.client,
+        statementPeriod: value.statementPeriod,
+        socDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.socDate)),
+        mrNumber: value.mrNumber,
+        payer: value.payer,
+        amount: value.amount,
+        dischargeDate: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.dischargeDate))
+    };
+}
+function from_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -477,11 +539,47 @@ function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_vec_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Invoice>): Array<Invoice> {
-    return value.map((x)=>from_candid_Invoice_n5(_uploadFile, _downloadFile, x));
+function from_candid_vec_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Invoice>): Array<Invoice> {
+    return value.map((x)=>from_candid_Invoice_n10(_uploadFile, _downloadFile, x));
+}
+function to_candid_InvoiceRequest_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: InvoiceRequest): _InvoiceRequest {
+    return to_candid_record_n4(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
+}
+function to_candid_record_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    transactionDate?: string;
+    projectName: string;
+    clientName: string;
+    socDate?: string;
+    dueDate: string;
+    payerSource: string;
+    invoiceDate?: string;
+    amountDue: number;
+    dischargeDate?: string;
+}): {
+    transactionDate: [] | [string];
+    projectName: string;
+    clientName: string;
+    socDate: [] | [string];
+    dueDate: string;
+    payerSource: string;
+    invoiceDate: [] | [string];
+    amountDue: number;
+    dischargeDate: [] | [string];
+} {
+    return {
+        transactionDate: value.transactionDate ? candid_some(value.transactionDate) : candid_none(),
+        projectName: value.projectName,
+        clientName: value.clientName,
+        socDate: value.socDate ? candid_some(value.socDate) : candid_none(),
+        dueDate: value.dueDate,
+        payerSource: value.payerSource,
+        invoiceDate: value.invoiceDate ? candid_some(value.invoiceDate) : candid_none(),
+        amountDue: value.amountDue,
+        dischargeDate: value.dischargeDate ? candid_some(value.dischargeDate) : candid_none()
+    };
 }
 function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     admin: null;

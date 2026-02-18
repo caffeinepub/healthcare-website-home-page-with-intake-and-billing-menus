@@ -4,6 +4,7 @@ import type { Invoice } from '../backend';
 
 // Query key for LOC receivables
 export const LOC_RECEIVABLES_QUERY_KEY = ['locReceivables'];
+export const LOC_INQUIRY_QUERY_KEY = ['locInquiry'];
 
 /**
  * Hook to fetch LOC receivables using the dedicated backend method.
@@ -29,6 +30,7 @@ export function useGetLOCReceivables(options?: { enabled?: boolean }) {
 /**
  * Hook to delete multiple invoices and refresh LOC receivables.
  * Returns detailed results for each invoice deletion without throwing on partial failures.
+ * Works for both authenticated and anonymous users for LOC sample invoices.
  */
 export function useDeleteLOCInvoices() {
   const { actor } = useActor();
@@ -66,8 +68,41 @@ export function useDeleteLOCInvoices() {
         });
       }
       
-      // Invalidate as a safety net to ensure consistency
+      // Invalidate LOC receivables and LOC inquiry to restore sample availability
       queryClient.invalidateQueries({ queryKey: LOC_RECEIVABLES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: LOC_INQUIRY_QUERY_KEY });
+    },
+  });
+}
+
+/**
+ * Hook to delete a single invoice from the claim details dialog.
+ * Updates the LOC receivables cache on success.
+ * Works for both authenticated and anonymous users for LOC sample invoices.
+ */
+export function useDeleteSingleLOCInvoice() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (invoiceId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      const success = await actor.deleteInvoice(invoiceId);
+      if (!success) {
+        throw new Error('Failed to delete invoice');
+      }
+      return invoiceId;
+    },
+    onSuccess: (deletedId) => {
+      // Remove the deleted invoice from the cache
+      queryClient.setQueryData<Invoice[]>(LOC_RECEIVABLES_QUERY_KEY, (oldData) => {
+        if (!oldData) return oldData;
+        return oldData.filter(invoice => invoice.id !== deletedId);
+      });
+      
+      // Invalidate LOC receivables and LOC inquiry to restore sample availability
+      queryClient.invalidateQueries({ queryKey: LOC_RECEIVABLES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: LOC_INQUIRY_QUERY_KEY });
     },
   });
 }

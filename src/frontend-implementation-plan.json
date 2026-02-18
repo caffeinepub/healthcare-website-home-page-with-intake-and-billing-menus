@@ -1,62 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Billing-only UI: remove Intake navigation, dashboard content, and route",
+  "title": "Fix anonymous LOC invoice delete/cancel UX and SOC/Discharge date rendering",
   "requirements": [
     {
-      "id": "REQ-79",
-      "summary": "Remove the Intake top-level navigation item from the Header so navigation is Billing-focused.",
+      "id": "REQ-89",
+      "summary": "Ensure LOC invoice delete/cancel works for anonymous users and the LOC receivables grid updates immediately after deletion.",
       "acceptanceCriteria": [
-        "The header no longer renders a top-level navigation link labeled \"Intake\".",
-        "The remaining header menus (e.g., Billing and Account) continue to function and open/close as before."
+        "When not signed in, a user can delete LOC invoices returned by getLOCReceivables() from the LOC Receivables page using the Delete button without any sign-in prompt or authorization trap.",
+        "When not signed in, a user can delete a LOC invoice from within the \"Claim details\" popup by clicking the button labeled exactly \"Cancel Invoice\" without any sign-in prompt or authorization trap.",
+        "After a successful delete (bulk delete or Cancel Invoice), the deleted invoice(s) are removed from the LOC Receivables grid immediately (no manual refresh required).",
+        "Deleting a LOC sample invoice restores the LOC sample inquiry availability so that clicking Display on the Manifest LOC Billing page can show the LOC inquiry again afterward (as per the existing LOC sample availability lifecycle).",
+        "If a delete fails for a non-auth reason, the UI shows a clear English error message and remains usable (no stuck loading state)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/hooks/useLocInvoiceReceivables.ts",
           "operation": "modify",
-          "description": "Remove the \"/intake\" Link and any \"Intake\" label rendering from the header navigation while keeping Billing/Account dropdown behavior unchanged."
+          "description": "Make LOC delete/cancel mutations explicitly use an anonymous backend actor (independent of Internet Identity state) to avoid any sign-in prompts for the LOC sample flow; on success, update the LOC receivables cache immediately and also invalidate the LOC inquiry query key so the sample inquiry can reappear after deletion. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LocInvoiceReceivable.tsx",
+          "operation": "modify",
+          "description": "Harden delete/cancel UI behavior: ensure errors are shown as clear English messages (using existing normalization) and that dialog/grid state never gets stuck in a loading state on failure; keep the deleted invoices removed from the table via existing optimistic/cache updates and ensure selection is cleared/updated appropriately. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/authErrorMessages.ts",
+          "operation": "modify",
+          "description": "Adjust authorization-related messaging for the LOC delete/cancel flow so anonymous LOC deletions do not surface a misleading sign-in instruction; preserve clear English errors for genuine non-auth failures while keeping UI usable. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-80",
-      "summary": "Remove Intake promotional/CTA content from the Home dashboard and update copy to be Billing-only.",
+      "id": "REQ-90",
+      "summary": "Display SOC Date as 1/1/2026 and Discharge Date as blank for the LOC sample inquiry, and ensure invoices created from that inquiry store those normalized values.",
       "acceptanceCriteria": [
-        "Home page no longer contains a CTA button/link that navigates to \"/intake\" or is labeled \"Patient Intake\"/\"Intake\".",
-        "Home page no longer contains an \"Intake\" service card or any intake-related \"blog\"/feature highlight content.",
-        "Any remaining Home page descriptive text is updated so it does not mention patient intake (Billing-focused copy only)."
+        "On the Manifest LOC Billing page, after clicking Display, the Status column shows SOC Date exactly \"1/1/2026\" for the PhilipTest row.",
+        "On the Manifest LOC Billing page, after clicking Display, the Status column shows Discharge Date as blank/empty for the PhilipTest row (no date text is rendered).",
+        "When creating an invoice from the displayed LOC inquiry, the invoice stores the SOC Date value as \"1/1/2026\" and stores Discharge Date as empty (null/undefined/empty string), and the LOC Receivables \"Claim details\" popup displays SOC Date as \"1/1/2026\" (and does not display any discharge date value).",
+        "The backend LOC sample invoice detection logic (used to allow anonymous behavior and to toggle sample availability) remains consistent with the updated SOC/Discharge date values, so LOC creation/deletion rules still apply to the sample invoice."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/Home.tsx",
+          "path": "frontend/src/pages/ManifestLocBilling.tsx",
           "operation": "modify",
-          "description": "Remove the hero CTA Link to \"/intake\", remove the Intake service card/section Link to \"/intake\", and update the hero/marketing copy to be Billing-focused only."
-        }
-      ]
-    },
-    {
-      "id": "REQ-81",
-      "summary": "Remove the Intake page from the TanStack Router flow and ensure visiting /intake does not show Intake UI (redirect or not-found style behavior).",
-      "acceptanceCriteria": [
-        "The TanStack Router route definition for path \"/intake\" no longer renders the Intake page UI.",
-        "Direct navigation to \"/intake\" does not display the Intake page content; users are instead sent to a Billing-relevant destination (e.g., \"/billing\") or an equivalent not-found experience.",
-        "No other existing Billing, Hospice Billing, Manifest, or Receivables routes are broken by this change."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/IntakeRedirect.tsx",
-          "operation": "create",
-          "description": "Create a minimal route component used only for \"/intake\" that immediately sends users to a Billing-relevant destination (preferably \"/billing\") and does not display any Intake page content."
+          "description": "Normalize the displayed LOC inquiry values for the sample row (PhilipTest): force SOC Date to \"1/1/2026\" and ensure Discharge Date is treated as empty; render Discharge Date as blank (no date text) in the Status column; when creating an invoice from the inquiry, pass the normalized SOC/Discharge values so stored invoice data matches the UI. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/LocInvoiceReceivable.tsx",
           "operation": "modify",
-          "description": "Remove the import and route configuration that renders the Intake page, and replace the \"/intake\" route with a redirect/not-found style route (e.g., using the new IntakeRedirect component) without impacting existing Billing/Hospice/Manifest/Receivables routes."
-        },
-        {
-          "path": "frontend/src/pages/Intake.tsx",
-          "operation": "delete",
-          "description": "Remove the unused Intake page implementation so it cannot be rendered by routing and is no longer part of the app flow."
+          "description": "Ensure the \"Claim details\" dialog receives and displays SOC Date consistently for LOC invoices created from the sample inquiry (expecting \"1/1/2026\"), and that no discharge date value is introduced/presented in this flow. Verify the component's usage instructions before implementing."
         }
       ]
     }

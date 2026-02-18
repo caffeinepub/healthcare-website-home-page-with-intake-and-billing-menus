@@ -13,22 +13,39 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const InvoiceRequest = IDL.Record({
+  'transactionDate' : IDL.Opt(IDL.Text),
+  'projectName' : IDL.Text,
+  'clientName' : IDL.Text,
+  'socDate' : IDL.Opt(IDL.Text),
+  'dueDate' : IDL.Text,
+  'payerSource' : IDL.Text,
+  'invoiceDate' : IDL.Opt(IDL.Text),
+  'amountDue' : IDL.Float64,
+  'dischargeDate' : IDL.Opt(IDL.Text),
+});
 export const LOCInquiry = IDL.Record({
   'client' : IDL.Text,
   'statementPeriod' : IDL.Text,
+  'socDate' : IDL.Opt(IDL.Text),
   'mrNumber' : IDL.Text,
   'payer' : IDL.Text,
   'amount' : IDL.Float64,
+  'dischargeDate' : IDL.Opt(IDL.Text),
 });
 export const Invoice = IDL.Record({
   'id' : IDL.Nat,
   'status' : IDL.Text,
+  'transactionDate' : IDL.Opt(IDL.Text),
   'projectName' : IDL.Text,
   'clientName' : IDL.Text,
   'owner' : IDL.Opt(IDL.Principal),
+  'socDate' : IDL.Opt(IDL.Text),
   'dueDate' : IDL.Text,
   'payerSource' : IDL.Text,
+  'invoiceDate' : IDL.Opt(IDL.Text),
   'amountDue' : IDL.Float64,
+  'dischargeDate' : IDL.Opt(IDL.Text),
 });
 export const UserProfile = IDL.Record({
   'name' : IDL.Text,
@@ -46,11 +63,7 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
-  'createInvoice' : IDL.Func(
-      [IDL.Text, IDL.Float64, IDL.Text, IDL.Text, IDL.Text],
-      [IDL.Nat],
-      [],
-    ),
+  'createInvoice' : IDL.Func([InvoiceRequest], [IDL.Nat], []),
   'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
   'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
@@ -80,22 +93,39 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const InvoiceRequest = IDL.Record({
+    'transactionDate' : IDL.Opt(IDL.Text),
+    'projectName' : IDL.Text,
+    'clientName' : IDL.Text,
+    'socDate' : IDL.Opt(IDL.Text),
+    'dueDate' : IDL.Text,
+    'payerSource' : IDL.Text,
+    'invoiceDate' : IDL.Opt(IDL.Text),
+    'amountDue' : IDL.Float64,
+    'dischargeDate' : IDL.Opt(IDL.Text),
+  });
   const LOCInquiry = IDL.Record({
     'client' : IDL.Text,
     'statementPeriod' : IDL.Text,
+    'socDate' : IDL.Opt(IDL.Text),
     'mrNumber' : IDL.Text,
     'payer' : IDL.Text,
     'amount' : IDL.Float64,
+    'dischargeDate' : IDL.Opt(IDL.Text),
   });
   const Invoice = IDL.Record({
     'id' : IDL.Nat,
     'status' : IDL.Text,
+    'transactionDate' : IDL.Opt(IDL.Text),
     'projectName' : IDL.Text,
     'clientName' : IDL.Text,
     'owner' : IDL.Opt(IDL.Principal),
+    'socDate' : IDL.Opt(IDL.Text),
     'dueDate' : IDL.Text,
     'payerSource' : IDL.Text,
+    'invoiceDate' : IDL.Opt(IDL.Text),
     'amountDue' : IDL.Float64,
+    'dischargeDate' : IDL.Opt(IDL.Text),
   });
   const UserProfile = IDL.Record({
     'name' : IDL.Text,
@@ -113,11 +143,7 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createInquiry' : IDL.Func([IDL.Text], [IDL.Nat], []),
-    'createInvoice' : IDL.Func(
-        [IDL.Text, IDL.Float64, IDL.Text, IDL.Text, IDL.Text],
-        [IDL.Nat],
-        [],
-      ),
+    'createInvoice' : IDL.Func([InvoiceRequest], [IDL.Nat], []),
     'deleteInvoice' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'displayLOCInquiry' : IDL.Func([], [IDL.Opt(LOCInquiry)], ['query']),
     'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),

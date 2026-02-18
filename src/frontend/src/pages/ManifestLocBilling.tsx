@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { useDisplayLOCInquiry, useCreateInvoice } from '@/hooks/useQueries';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { CreateLocInvoiceDialog } from '@/components/CreateLocInvoiceDialog';
 import { toast } from 'sonner';
 import type { LOCInquiry } from '../backend';
 
@@ -19,11 +20,24 @@ export default function ManifestLocBilling() {
   const [isSelected, setIsSelected] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDisplayLoading, setIsDisplayLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { loginStatus } = useInternetIdentity();
   
   const { refetch: refetchLOCInquiry } = useDisplayLOCInquiry();
   const createInvoice = useCreateInvoice();
+
+  // Helper function to format backend date (2026-01-02) to display format (1/1/2026)
+  const formatDateForDisplay = (isoDate: string | undefined): string => {
+    if (!isoDate) return '';
+    try {
+      const date = new Date(isoDate);
+      // Format as M/D/YYYY
+      return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    } catch {
+      return isoDate;
+    }
+  };
 
   const handleDisplay = async () => {
     // No authentication check - allow anonymous users to display
@@ -71,17 +85,27 @@ export default function ManifestLocBilling() {
     setShowSuccess(false);
   };
 
-  const handleCreateInvoice = async () => {
+  const handleCreateInvoiceClick = () => {
     if (!isSelected || !displayedInquiry) return;
+    setDialogOpen(true);
+  };
+
+  const handleDialogSubmit = async (invoiceDate: string, transactionDate: string) => {
+    if (!displayedInquiry) return;
 
     try {
-      // Create invoice with the inquiry details
+      // Create invoice with the inquiry details, dates, and status fields
+      // Keep socDate in backend format (2026-01-02) for backend detection logic
       await createInvoice.mutateAsync({
         projectName: 'LOC Inquiry',
         amountDue: displayedInquiry.amount,
         dueDate: displayedInquiry.statementPeriod.split('–')[1] || displayedInquiry.statementPeriod.split('-')[1] || new Date().toLocaleDateString(),
         clientName: displayedInquiry.client,
         payerSource: displayedInquiry.payer,
+        invoiceDate,
+        transactionDate,
+        socDate: displayedInquiry.socDate, // Keep in ISO format for backend
+        dischargeDate: displayedInquiry.dischargeDate || undefined, // Ensure null becomes undefined
       });
 
       setShowSuccess(true);
@@ -90,6 +114,7 @@ export default function ManifestLocBilling() {
       // Clear the displayed inquiry after creating invoice
       setDisplayedInquiry(null);
       setIsSelected(false);
+      setDialogOpen(false);
     } catch (error: any) {
       console.error('Failed to create invoice:', error);
       
@@ -99,8 +124,6 @@ export default function ManifestLocBilling() {
     }
   };
 
-  const isLoading = isDisplayLoading || createInvoice.isPending;
-
   return (
     <div className="container py-12">
       <div className="mx-auto max-w-6xl">
@@ -108,27 +131,25 @@ export default function ManifestLocBilling() {
           Manifest LOC Billing
         </h1>
         <p className="mb-8 text-lg text-muted-foreground">
-          Manage Level of Care (LOC) billing manifests for hospice services.
+          Display and manage Level of Care (LOC) billing inquiries.
         </p>
 
-        <div className="mb-6 flex items-center gap-4">
-          <Button onClick={handleDisplay} disabled={isLoading || loginStatus === 'logging-in'}>
+        <div className="mb-6 flex gap-3">
+          <Button
+            onClick={handleDisplay}
+            variant="default"
+            disabled={isDisplayLoading}
+          >
             {isDisplayLoading ? 'Loading...' : 'Display'}
           </Button>
           <Button
-            onClick={handleCreateInvoice}
+            onClick={handleCreateInvoiceClick}
             disabled={!isSelected || createInvoice.isPending}
             variant="default"
           >
             {createInvoice.isPending ? 'Creating...' : 'Create Invoice'}
           </Button>
         </div>
-
-        {showSuccess && (
-          <div className="mb-4 rounded-lg border border-primary bg-primary/10 p-4 text-sm text-foreground">
-            Invoice successfully created for the selected record.
-          </div>
-        )}
 
         <div className="rounded-lg border bg-card">
           <Table>
@@ -140,33 +161,60 @@ export default function ManifestLocBilling() {
                 <TableHead>Statement period</TableHead>
                 <TableHead>Payersource</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!displayedInquiry ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No record, Click on display button
-                  </TableCell>
-                </TableRow>
-              ) : (
+              {displayedInquiry ? (
                 <TableRow>
                   <TableCell>
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={handleCheckboxChange}
+                      aria-label="Select inquiry"
                     />
                   </TableCell>
                   <TableCell>{displayedInquiry.client}</TableCell>
                   <TableCell>{displayedInquiry.mrNumber}</TableCell>
                   <TableCell>{displayedInquiry.statementPeriod}</TableCell>
                   <TableCell>{displayedInquiry.payer}</TableCell>
-                  <TableCell>{displayedInquiry.amount}</TableCell>
+                  <TableCell>${displayedInquiry.amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">SOC Date: </span>
+                        <span className="font-medium text-foreground">
+                          {formatDateForDisplay(displayedInquiry.socDate)}
+                        </span>
+                      </div>
+                      {displayedInquiry.dischargeDate && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Discharge Date: </span>
+                          <span className="font-medium text-foreground">
+                            {formatDateForDisplay(displayedInquiry.dischargeDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    No record, Click on display button
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+
+        <CreateLocInvoiceDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSubmit={handleDialogSubmit}
+          isPending={createInvoice.isPending}
+        />
       </div>
     </div>
   );

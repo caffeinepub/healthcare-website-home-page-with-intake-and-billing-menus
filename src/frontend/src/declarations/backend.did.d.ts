@@ -19,19 +19,36 @@ export interface Inquiry {
 export interface Invoice {
   'id' : bigint,
   'status' : string,
+  'transactionDate' : [] | [string],
   'projectName' : string,
   'clientName' : string,
   'owner' : [] | [Principal],
+  'socDate' : [] | [string],
   'dueDate' : string,
   'payerSource' : string,
+  'invoiceDate' : [] | [string],
   'amountDue' : number,
+  'dischargeDate' : [] | [string],
+}
+export interface InvoiceRequest {
+  'transactionDate' : [] | [string],
+  'projectName' : string,
+  'clientName' : string,
+  'socDate' : [] | [string],
+  'dueDate' : string,
+  'payerSource' : string,
+  'invoiceDate' : [] | [string],
+  'amountDue' : number,
+  'dischargeDate' : [] | [string],
 }
 export interface LOCInquiry {
   'client' : string,
   'statementPeriod' : string,
+  'socDate' : [] | [string],
   'mrNumber' : string,
   'payer' : string,
   'amount' : number,
+  'dischargeDate' : [] | [string],
 }
 export interface UserProfile {
   'name' : string,
@@ -49,12 +66,9 @@ export interface _SERVICE {
    * / --- Invoice Management
    * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
    */
-  'createInvoice' : ActorMethod<
-    [string, number, string, string, string],
-    bigint
-  >,
+  'createInvoice' : ActorMethod<[InvoiceRequest], bigint>,
   /**
-   * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+   * / Delete Invoice - allows guest (anonymous) deletion for LOC sample
    */
   'deleteInvoice' : ActorMethod<[bigint], boolean>,
   'displayLOCInquiry' : ActorMethod<[], [] | [LOCInquiry]>,

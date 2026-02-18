@@ -10,23 +10,42 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useGetLOCReceivables, useDeleteLOCInvoices } from '@/hooks/useLocInvoiceReceivables';
+import { useGetLOCReceivables, useDeleteLOCInvoices, useDeleteSingleLOCInvoice } from '@/hooks/useLocInvoiceReceivables';
 import { ClaimDetailsDialog } from '@/components/ClaimDetailsDialog';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { normalizeAuthError } from '@/utils/authErrorMessages';
 import { formatDeleteResultMessage } from '@/utils/deleteResultsMessaging';
+import type { Invoice } from '../backend';
 
 export default function LocInvoiceReceivable() {
   const [displayClicked, setDisplayClicked] = useState(false);
   const { data: invoices = [], isLoading, error, refetch } = useGetLOCReceivables({ enabled: displayClicked });
   const deleteInvoices = useDeleteLOCInvoices();
+  const deleteSingleInvoice = useDeleteSingleLOCInvoice();
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<bigint>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInvoice, setDialogInvoice] = useState<{
     invoiceNumber: string;
     amount: string;
+    invoiceDate?: string;
+    transactionDate?: string;
+    socDate?: string;
+    invoiceId: bigint;
   } | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  // Helper function to format backend date (2026-01-02) to display format (1/1/2026)
+  const formatDateForDisplay = (isoDate: string | undefined): string => {
+    if (!isoDate) return '';
+    try {
+      const date = new Date(isoDate);
+      // Format as M/D/YYYY
+      return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    } catch {
+      return isoDate;
+    }
+  };
 
   // Clear selection if selected invoices no longer exist
   useEffect(() => {
@@ -99,10 +118,15 @@ export default function LocInvoiceReceivable() {
     }
   };
 
-  const handleInvoiceClick = (invoiceId: bigint, amount: number) => {
+  const handleInvoiceClick = (invoice: Invoice) => {
+    setCancelError(null);
     setDialogInvoice({
-      invoiceNumber: `INV-${invoiceId.toString().padStart(5, '0')}`,
-      amount: amount.toFixed(2),
+      invoiceNumber: `INV-${invoice.id.toString().padStart(5, '0')}`,
+      amount: invoice.amountDue.toFixed(2),
+      invoiceDate: invoice.invoiceDate,
+      transactionDate: invoice.transactionDate,
+      socDate: formatDateForDisplay(invoice.socDate), // Format for display
+      invoiceId: invoice.id,
     });
     setDialogOpen(true);
   };
@@ -111,6 +135,21 @@ export default function LocInvoiceReceivable() {
     setDialogOpen(open);
     if (!open) {
       setDialogInvoice(null);
+      setCancelError(null);
+    }
+  };
+
+  const handleCancelInvoice = async (invoiceId: bigint) => {
+    setCancelError(null);
+    try {
+      await deleteSingleInvoice.mutateAsync(invoiceId);
+      toast.success('Invoice cancelled successfully');
+      setDialogOpen(false);
+      setDialogInvoice(null);
+    } catch (error) {
+      console.error('Failed to cancel invoice:', error);
+      const errorMessage = normalizeAuthError(error, 'write');
+      setCancelError(errorMessage);
     }
   };
 
@@ -232,7 +271,7 @@ export default function LocInvoiceReceivable() {
                       </TableCell>
                       <TableCell>
                         <button
-                          onClick={() => handleInvoiceClick(invoice.id, invoice.amountDue)}
+                          onClick={() => handleInvoiceClick(invoice)}
                           className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                         >
                           INV-{invoice.id.toString().padStart(5, '0')}
@@ -240,7 +279,7 @@ export default function LocInvoiceReceivable() {
                       </TableCell>
                       <TableCell>{invoice.clientName}</TableCell>
                       <TableCell>{mrNumber}</TableCell>
-                      <TableCell>1/1/2026-1/31/2026</TableCell>
+                      <TableCell>{invoice.dueDate}</TableCell>
                       <TableCell>{invoice.payerSource}</TableCell>
                       <TableCell>${invoice.amountDue.toFixed(2)}</TableCell>
                     </TableRow>
@@ -250,16 +289,23 @@ export default function LocInvoiceReceivable() {
             </TableBody>
           </Table>
         </div>
-      </div>
 
-      {dialogInvoice && (
-        <ClaimDetailsDialog
-          open={dialogOpen}
-          onOpenChange={handleCloseDialog}
-          invoiceNumber={dialogInvoice.invoiceNumber}
-          totalAmount={dialogInvoice.amount}
-        />
-      )}
+        {dialogInvoice && (
+          <ClaimDetailsDialog
+            open={dialogOpen}
+            onOpenChange={handleCloseDialog}
+            invoiceNumber={dialogInvoice.invoiceNumber}
+            totalAmount={`$${dialogInvoice.amount}`}
+            invoiceDate={dialogInvoice.invoiceDate}
+            transactionDate={dialogInvoice.transactionDate}
+            socDate={dialogInvoice.socDate}
+            invoiceId={dialogInvoice.invoiceId}
+            onCancelInvoice={handleCancelInvoice}
+            isCancelling={deleteSingleInvoice.isPending}
+            cancelError={cancelError}
+          />
+        )}
+      </div>
     </div>
   );
 }

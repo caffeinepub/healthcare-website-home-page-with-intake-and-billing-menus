@@ -1,37 +1,39 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T07:51:33.016Z",
-  "summary": "REQ-79 and REQ-80 appear implemented (Header navigation no longer shows Intake; Home page content is Billing-only). REQ-81 is only partially met: /intake no longer shows Intake page content due to a redirect, but the /intake route is still present in the router configuration rather than being removed.",
+  "generatedAt": "2026-02-15T10:21:26.945Z",
+  "summary": "REQ-89 appears partially addressed on the frontend (anonymous delete flows via dedicated LOC receivables hooks, optimistic cache removal, and query invalidation). However, REQ-90 is not implemented as specified: the code continues to rely on an ISO SOC date of \"2026-01-02\" and merely formats it for display, which would not yield the required displayed value \"1/1/2026\". Additionally, an unrequested backend migration module was introduced, which conflicts with the stated constraint of keeping the backend as a single actor in backend/main.mo.",
   "missing_requirements": [
     {
-      "id": "REQ-81",
-      "requirement": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow.",
-      "reason": "The diff still defines a TanStack Router route with path \"/intake\" (now rendering an IntakeRedirect component). This keeps the Intake route in the routing configuration rather than removing it.",
+      "id": "REQ-90",
+      "requirement": "Update the LOC sample inquiry \"SOC Date\" value to \"1/1/2026\" and ensure the \"Discharge Date\" is blank/empty in the Manifest LOC Billing inquiry grid and in any stored invoice data derived from that inquiry (and keep backend sample detection consistent with these updated values).",
+      "reason": "The implementation still uses SOC date \"2026-01-02\" as the canonical value (including for LOC sample detection and invoice creation), and only formats dates for display using JS Date parsing. Parsing \"2026-01-02\" would display as 1/2/2026 (not 1/1/2026). The backend migration only nulls dischargeDate for invoices matching socDate == \"2026-01-02\" and does not update socDate to match the requested 1/1/2026 requirement.",
       "evidence": [
-        "frontend/src/App.tsx (defines `intakeRoute` with `path: '/intake'` and includes it in `routeTree`)",
-        "frontend/src/pages/IntakeRedirect.tsx (new component used by the /intake route)"
+        "backend/main.mo (isLOCInvoice detection uses invoiceRequest.socDate == ?(\"2026-01-02\"))",
+        "backend/migration.mo (matches invoice.socDate == ?(\"2026-01-02\") and only sets dischargeDate = null)",
+        "frontend/src/pages/ManifestLocBilling.tsx (formatDateForDisplay uses new Date(isoDate) and comment indicates backend SOC date kept in \"2026-01-02\")",
+        "frontend/src/pages/LocInvoiceReceivable.tsx (formatDateForDisplay uses new Date(isoDate); would not render 1/1/2026 if isoDate is 2026-01-02)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a dedicated `/intake` redirect page/component (IntakeRedirect) and kept `/intake` as an explicit route that redirects to `/billing`.",
-      "reason": "The request asked to remove the Intake route from routing; implementing a new redirect component/route is an alternative approach and is not explicitly requested as a new page/component.",
+      "description": "Introduced a backend migration module/file and upgrade-time migration wiring.",
+      "reason": "The BuildRequest did not ask for migrations or additional backend modules; it also explicitly constrained the backend to remain a single Motoko actor in backend/main.mo (no additional backend services/files implied).",
       "evidence": [
-        "frontend/src/pages/IntakeRedirect.tsx",
-        "frontend/src/App.tsx (routes /intake to IntakeRedirect)"
+        "backend/migration.mo (new file with Migration.run)",
+        "backend/main.mo (imports Migration \"migration\" and applies it with '(with migration = Migration.run)')"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.68,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/pages/Home.tsx",
-    "frontend/src/pages/Intake.tsx",
-    "frontend/src/pages/IntakeRedirect.tsx",
+    "frontend/src/hooks/useLocInvoiceReceivables.ts",
+    "frontend/src/pages/LocInvoiceReceivable.tsx",
+    "frontend/src/pages/ManifestLocBilling.tsx",
     "project_state.json"
   ]
 }

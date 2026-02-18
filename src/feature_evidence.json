@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-intake-top-level-navigation-item-from-the-header-so-the-primary-navigation-is-billing-focused-and-no-intake-menu-entry-is-shown-anywhere-in-the-header-ui",
-      "featureTitle": "Remove the \"Intake\" top-level navigation item from the header so the primary navigation is Billing-focused and no \"Intake\" menu entry is shown anywhere in the Header UI.",
+      "featureId": "feature-fix-invoice-deletion-cancellation-so-it-works-without-requiring-internet-identity-sign-in-for-the-loc-sample-invoice-flow-including-when-deleting-from-the-loc-receivables-page-and-when-clicking-the-cancel-invoice-button-in-the-claim-details-dialog",
+      "featureTitle": "Fix invoice deletion/cancellation so it works without requiring Internet Identity sign-in for the LOC sample invoice flow (including when deleting from the LOC Receivables page and when clicking the \"Cancel Invoice\" button in the \"Claim details\" dialog).",
       "files": [
-        "frontend/src/components/Header.tsx"
+        "frontend/src/hooks/useLocInvoiceReceivables.ts",
+        "frontend/src/pages/LocInvoiceReceivable.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -16,15 +17,16 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-79"
+        "REQ-89"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-all-patient-intake-intake-promotional-content-from-the-home-dashboard-landing-page-so-the-dashboard-presents-a-billing-only-experience-e-g-remove-the-intake-cta-button-link-remove-the-intake-service-card-section-and-remove-intake-related-marketing-copy",
-      "featureTitle": "Remove all Patient Intake/Intake promotional content from the Home (dashboard/landing) page so the dashboard presents a Billing-only experience (e.g., remove the Intake CTA button/link, remove the Intake service card/section, and remove intake-related marketing copy).",
+      "featureId": "feature-update-the-loc-sample-inquiry-soc-date-value-to-1-1-2026-and-ensure-the-discharge-date-is-blank-empty-in-the-manifest-loc-billing-inquiry-grid-and-in-any-stored-invoice-data-derived-from-that-inquiry",
+      "featureTitle": "Update the LOC sample inquiry \"SOC Date\" value to \"1/1/2026\" and ensure the \"Discharge Date\" is blank/empty in the Manifest LOC Billing inquiry grid and in any stored invoice data derived from that inquiry.",
       "files": [
-        "frontend/src/pages/Home.tsx"
+        "frontend/src/pages/LocInvoiceReceivable.tsx",
+        "frontend/src/pages/ManifestLocBilling.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -35,28 +37,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-80"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-remove-the-intake-route-from-the-app-routing-configuration-so-the-intake-page-is-not-part-of-the-navigable-application-flow-ensure-that-directly-visiting-intake-does-not-present-the-intake-page-content-redirect-to-billing-or-show-a-not-found-style-outcome",
-      "featureTitle": "Remove the Intake route from the app routing configuration so the Intake page is not part of the navigable application flow; ensure that directly visiting \"/intake\" does not present the Intake page content (redirect to \"/billing\" or show a not-found style outcome).",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/Intake.tsx",
-        "frontend/src/pages/IntakeRedirect.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-81"
+        "REQ-90"
       ],
       "confidence": "high"
     }

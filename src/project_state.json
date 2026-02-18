@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 59,
+  "projectStateVersion": 65,
   "summary": "Shift the app to a Billing-only experience: remove the Intake top-level navigation and all Intake-related pages/content so only Billing workflows remain (including Hospice Billing inquiry pages and Account receivables).",
   "architectural_notes": [
     "Rename the Account submenu/page label from \"R&B invoice receivable\" to \"R&B Receivables\" (update navigation text and matching page header accordingly).",
@@ -26,7 +26,7 @@
     "Receivables page shows incorrect Payersource value (shows \"pending\" instead of expected \"NGS\" for the sample invoice).",
     "Manifest billing/inquiry Display still lists records that already have an invoice created (e.g., PhilipTest) even though the invoice is present in Receivables; invoiced inquiries should be hidden until the invoice is deleted, then reappear after deletion."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-home-page-for-a-healthcare-web-application-that-prominently-displays-a-navigation-menu-with-exactly-two-items-intake-and-billing",
@@ -555,6 +555,62 @@
         "REQ-81"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-loc-billing-page-invoice-creation-ux-so-that-clicking-the-existing-create-invoice-button-after-a-row-is-selected-opens-a-popup-dialog-that-contains-1-an-invoice-date-date-picker-input-with-a-calendar-placeholder-2-a-transaction-date-date-picker-input-with-a-calendar-placeholder-and-3-a-create-invoice-button-inside-the-popup-that-is-disabled-until-both-dates-are-selected-submitting-from-the-popup-must-create-the-invoice-using-the-selected-record",
+      "title": "Update the Manifest LOC Billing page invoice-creation UX so that clicking the existing \"Create Invoice\" button (after a row is selected) opens a popup dialog that contains: (1) an \"Invoice date\" date-picker input with a calendar placeholder, (2) a \"Transaction date\" date-picker input with a calendar placeholder, and (3) a \"Create Invoice\" button inside the popup that is disabled until both dates are selected; submitting from the popup must create the invoice using the selected record.",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-claim-details-popup-so-it-displays-the-created-invoice-s-invoice-date-and-transaction-date-in-english-labels-in-addition-to-the-existing-fields-these-values-must-come-from-the-stored-invoice-data-for-the-clicked-receivables-row",
+      "title": "Extend the \"Claim details\" popup so it displays the created invoice's Invoice date and Transaction date (in English labels) in addition to the existing fields; these values must come from the stored invoice data for the clicked receivables row.",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-claim-details-popup-frontend-src-components-claimdetailsdialog-tsx-as-used-from-frontend-src-pages-locinvoicereceivable-tsx-add-a-user-visible-button-labeled-exactly-cancel-invoice-that-when-clicked-deletes-the-corresponding-invoice-record-and-updates-the-loc-receivables-ui-accordingly",
+      "title": "In the \"Claim details\" popup (frontend/src/components/ClaimDetailsDialog.tsx as used from frontend/src/pages/LocInvoiceReceivable.tsx), add a user-visible button labeled exactly \"Cancel Invoice\" that, when clicked, deletes the corresponding invoice record and updates the LOC receivables UI accordingly.",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-manifest-loc-billing-inquiry-grid-frontend-src-pages-manifestlocbilling-tsx-to-include-a-new-column-header-labeled-exactly-status-in-that-column-render-two-labels-soc-date-and-discharge-date-and-show-values-for-the-displayed-inquiry-for-client-philiptest-set-soc-date-to-1-1-2026-and-discharge-date-blank",
+      "title": "Update the Manifest LOC Billing inquiry grid (frontend/src/pages/ManifestLocBilling.tsx) to include a new column header labeled exactly \"Status\". In that column, render two labels \"SOC Date\" and \"Discharge Date\" and show values for the displayed inquiry: for client \"PhilipTest\" set SOC Date to \"1/1/2026\" and Discharge Date blank.",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-show-soc-date-in-the-claim-details-popup-frontend-src-components-claimdetailsdialog-tsx-using-english-labeling-and-ensure-the-value-comes-from-the-stored-invoice-data-for-the-clicked-receivables-row",
+      "title": "Show SOC Date in the \"Claim details\" popup (frontend/src/components/ClaimDetailsDialog.tsx) using English labeling, and ensure the value comes from the stored invoice data for the clicked receivables row.",
+      "reqIds": [
+        "REQ-88"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-invoice-deletion-cancellation-so-it-works-without-requiring-internet-identity-sign-in-for-the-loc-sample-invoice-flow-including-when-deleting-from-the-loc-receivables-page-and-when-clicking-the-cancel-invoice-button-in-the-claim-details-dialog",
+      "title": "Fix invoice deletion/cancellation so it works without requiring Internet Identity sign-in for the LOC sample invoice flow (including when deleting from the LOC Receivables page and when clicking the \"Cancel Invoice\" button in the \"Claim details\" dialog).",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-loc-sample-inquiry-soc-date-value-to-1-1-2026-and-ensure-the-discharge-date-is-blank-empty-in-the-manifest-loc-billing-inquiry-grid-and-in-any-stored-invoice-data-derived-from-that-inquiry",
+      "title": "Update the LOC sample inquiry \"SOC Date\" value to \"1/1/2026\" and ensure the \"Discharge Date\" is blank/empty in the Manifest LOC Billing inquiry grid and in any stored invoice data derived from that inquiry.",
+      "reqIds": [
+        "REQ-90"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -808,6 +864,52 @@
       "id": "AR-49",
       "summary": "Remove the Intake menu and all Intake-related pages/content (including the patient intake dashboard section/blogs) so the UI is Billing-only",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "On Manifest LOC Billing, change Create Invoice flow to open a popup requiring Invoice Date and Transaction Date (calendar pickers) and enable the popup Create Invoice button only after both dates are filled",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Extend the \"Claim details\" popup to include and display Invoice Date and Transaction Date so users can see when the invoice was created",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-53",
+      "summary": "Persist invoiceDate and transactionDate on invoices created from the LOC billing flow by extending the backend Invoice model and the createInvoice API to accept and store both date values, while preserving the current anonymous LOC-invoice creation behavior and LOC receivables listing behavior.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-54",
+      "summary": "Add a \"Cancel Invoice\" button in the \"Claim details\" popup that deletes the corresponding invoice when clicked",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-55",
+      "summary": "Add a \"Status\" column to the Manifest LOC Billing grid showing SOC Date and Discharge Date (for PhilipTest: SOC Date 1/1/2026; Discharge Date blank)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-56",
+      "summary": "Show SOC Date in the \"Claim details\" popup",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-58",
+      "summary": "Extend the backend invoice and LOC inquiry data model to store and return SOC Date and Discharge Date for LOC sample data, so SOC Date can be shown in both the Manifest LOC Billing grid and the Claim details popup.",
+      "reqIds": [
+        "REQ-86"
+      ],
       "status": "pending"
     }
   ],

@@ -7,9 +7,10 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
-
-
+// Apply migration on upgrade
+(with migration = Migration.run)
 actor {
   // Initialize the access control system
   let accessControlState = AccessControl.initState();
@@ -24,6 +25,10 @@ actor {
     clientName : Text;
     payerSource : Text;
     owner : ?Principal;
+    invoiceDate : ?Text;
+    transactionDate : ?Text;
+    socDate : ?Text;
+    dischargeDate : ?Text;
   };
 
   type Inquiry = {
@@ -45,6 +50,20 @@ actor {
     statementPeriod : Text;
     payer : Text;
     amount : Float;
+    socDate : ?Text;
+    dischargeDate : ?Text;
+  };
+
+  public type InvoiceRequest = {
+    projectName : Text;
+    amountDue : Float;
+    dueDate : Text;
+    clientName : Text;
+    payerSource : Text;
+    invoiceDate : ?Text;
+    transactionDate : ?Text;
+    socDate : ?Text;
+    dischargeDate : ?Text;
   };
 
   var nextInvoiceId = 0;
@@ -85,15 +104,9 @@ actor {
   /// --- Invoice Management
 
   /// Create invoice (can be anonymous for LOC, otherwise must be logged in)
-  public shared ({ caller }) func createInvoice(
-    projectName : Text,
-    amountDue : Float,
-    dueDate : Text,
-    clientName : Text,
-    payerSource : Text,
-  ) : async Nat {
+  public shared ({ caller }) func createInvoice(invoiceRequest : InvoiceRequest) : async Nat {
     // Check if this is a LOC invoice based on specific criteria
-    let isLOCInvoice = projectName == "LOC Inquiry" and clientName == "PhilipTest" and amountDue == 3100.0;
+    let isLOCInvoice = invoiceRequest.projectName == "LOC Inquiry" and invoiceRequest.clientName == "PhilipTest" and invoiceRequest.amountDue == 3100.0 and invoiceRequest.socDate == ?("2026-01-02");
 
     // Check if caller is anonymous
     let isAnonymous = caller == anonymousPrincipal;
@@ -104,16 +117,19 @@ actor {
       Runtime.trap("Unauthorized: Only users can create invoices");
     };
 
-    // Invoices created by anonymous principal will have a \`null\` owner
     let invoice : Invoice = {
       id = nextInvoiceId;
-      projectName;
-      amountDue;
-      dueDate;
+      projectName = invoiceRequest.projectName;
+      amountDue = invoiceRequest.amountDue;
+      dueDate = invoiceRequest.dueDate;
       status = "pending";
-      clientName;
-      payerSource;
+      clientName = invoiceRequest.clientName;
+      payerSource = invoiceRequest.payerSource;
       owner = if (isLOCInvoice and isAnonymous) { null } else { ?caller };
+      invoiceDate = invoiceRequest.invoiceDate;
+      transactionDate = invoiceRequest.transactionDate;
+      socDate = invoiceRequest.socDate;
+      dischargeDate = invoiceRequest.dischargeDate;
     };
     invoices.add(nextInvoiceId, invoice);
 
@@ -148,6 +164,10 @@ actor {
           status = "paid";
           payerSource = invoice.payerSource;
           owner = invoice.owner;
+          invoiceDate = invoice.invoiceDate;
+          transactionDate = invoice.transactionDate;
+          socDate = invoice.socDate;
+          dischargeDate = invoice.dischargeDate;
         };
         invoices.add(invoiceId, updatedInvoice);
         true;
@@ -212,14 +232,14 @@ actor {
     filtered.toArray();
   };
 
-  // LOC Receivables are accessible to all authenticated users (including guests)
+  // LOC Receivables are accessible to all users including anonymous (guests)
   // This allows the LOC workflow to function for both anonymous and authenticated users
   // Anonymous users can view LOC receivables to see if their invoice was created
   // Authenticated users can view LOC receivables as part of the billing workflow
   public query ({ caller }) func getLOCReceivables() : async [Invoice] {
-    // No authorization check - accessible to everyone including anonymous users
+    // No authorization check - accessible to everyone including anonymous users (guests)
     // This is intentional for the LOC billing workflow where anonymous users
-    // need to verify their invoice creation and deletion
+    // need to verify their invoice creation
     invoices.values().filter(
       func(invoice) {
         invoice.projectName == "LOC Inquiry" and invoice.status == "pending";
@@ -227,34 +247,39 @@ actor {
     ).toArray();
   };
 
-  /// Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+  /// Delete Invoice - allows guest (anonymous) deletion for LOC sample
   public shared ({ caller }) func deleteInvoice(invoiceId : Nat) : async Bool {
-    switch (invoices.get(invoiceId)) {
+    let invoiceOpt = invoices.get(invoiceId);
+    switch (invoiceOpt) {
       case (null) { false };
       case (?invoice) {
-        let isLOCInvoice = invoice.projectName == "LOC Inquiry" and invoice.clientName == "PhilipTest" and invoice.amountDue == 3100.0;
-        let isAnonymousOwner = switch (invoice.owner) {
-          case (null) { true };
-          case (?_owner) { false };
-        };
+        let isLOCInvoice = invoice.projectName == "LOC Inquiry" and invoice.clientName == "PhilipTest" and invoice.amountDue == 3100.0 and invoice.socDate == ?("2026-01-02");
 
-        // Special handling for anonymous LOC invoices: allow ANYONE (including anonymous) to delete
-        if (isLOCInvoice and isAnonymousOwner) {
-          // Restore sample availability after deletion
-          isLOCSampleAvailable := true;
+        // Special handling for LOC sample invoice
+        if (isLOCInvoice) {
+          // If the invoice has no owner (created by anonymous), allow anyone to delete it
+          // If the invoice has an owner, only that owner or admin can delete it
+          switch (invoice.owner) {
+            case (null) {
+              // Anonymous-created LOC invoice - anyone can delete (no auth check needed)
+            };
+            case (?owner) {
+              // Owned LOC invoice - only owner or admin can delete
+              if (caller != owner and not AccessControl.isAdmin(accessControlState, caller)) {
+                Runtime.trap("Unauthorized: Only the creator or admin can delete this invoice");
+              };
+            };
+          };
+        } else {
+          // For all non-LOC invoices, require user permissions
+          if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+            Runtime.trap("Unauthorized: Only users can delete invoices");
+          };
 
-          invoices.remove(invoiceId);
-          return true;
-        };
-
-        // For regular invoices (non-LOC or owned LOC invoices), require user permission
-        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-          Runtime.trap("Unauthorized: Only users can delete invoices");
-        };
-
-        // Check ownership or admin rights for regular invoices
-        if (invoice.owner != ?caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Can only delete your own invoices");
+          // Check ownership or admin rights for regular invoices
+          if (invoice.owner != ?caller and not AccessControl.isAdmin(accessControlState, caller)) {
+            Runtime.trap("Unauthorized: Can only delete your own invoices");
+          };
         };
 
         // If this is a LOC invoice being deleted, restore availability
@@ -326,7 +351,7 @@ actor {
 
   // Allow both anonymous and authenticated users to display LOC inquiries only when available
   public query ({ caller }) func displayLOCInquiry() : async ?LOCInquiry {
-    // No authorization check - accessible to everyone including anonymous users
+    // No authorization check - accessible to everyone including anonymous users (guests)
     // This is intentional for the LOC billing workflow
     if (isLOCSampleAvailable) {
       ?{
@@ -335,9 +360,10 @@ actor {
         statementPeriod = "1/1/2026-1/31/2026";
         payer = "NGS";
         amount = 3100;
+        socDate = ?("2026-01-02");
+        dischargeDate = null;
       };
     } else {
-      // Explicitly return null when the sample is not available
       null;
     };
   };

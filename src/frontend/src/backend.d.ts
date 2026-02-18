@@ -10,19 +10,25 @@ export type Option<T> = Some<T> | None;
 export interface LOCInquiry {
     client: string;
     statementPeriod: string;
+    socDate?: string;
     mrNumber: string;
     payer: string;
     amount: number;
+    dischargeDate?: string;
 }
 export interface Invoice {
     id: bigint;
     status: string;
+    transactionDate?: string;
     projectName: string;
     clientName: string;
     owner?: Principal;
+    socDate?: string;
     dueDate: string;
     payerSource: string;
+    invoiceDate?: string;
     amountDue: number;
+    dischargeDate?: string;
 }
 export interface Inquiry {
     id: bigint;
@@ -34,6 +40,17 @@ export interface UserProfile {
     name: string;
     email: string;
     company: string;
+}
+export interface InvoiceRequest {
+    transactionDate?: string;
+    projectName: string;
+    clientName: string;
+    socDate?: string;
+    dueDate: string;
+    payerSource: string;
+    invoiceDate?: string;
+    amountDue: number;
+    dischargeDate?: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -47,9 +64,9 @@ export interface backendInterface {
      * / --- Invoice Management
      * / Create invoice (can be anonymous for LOC, otherwise must be logged in)
      */
-    createInvoice(projectName: string, amountDue: number, dueDate: string, clientName: string, payerSource: string): Promise<bigint>;
+    createInvoice(invoiceRequest: InvoiceRequest): Promise<bigint>;
     /**
-     * / Delete Invoice - supports anonymous invoices (LOC) deletion without authentication
+     * / Delete Invoice - allows guest (anonymous) deletion for LOC sample
      */
     deleteInvoice(invoiceId: bigint): Promise<boolean>;
     displayLOCInquiry(): Promise<LOCInquiry | null>;
